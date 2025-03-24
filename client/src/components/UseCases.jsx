@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import '../App.css';
 
+
+const baseURL = "http://localhost:8080";
+
+console.log(`checking in UseCases.jsx: ${baseURL}`)   
 // populate dropdown with use cases
 const UseCases = ({ onUseCaseSelection }) => {
     const [useCases, setUseCases] = useState([]);
@@ -22,27 +26,32 @@ const UseCases = ({ onUseCaseSelection }) => {
         const useCase = useCases.find(item => item.id === selectedUseCaseId);
         onUseCaseSelection(useCase.name, [], [], false)
         try {
-            const response = await fetch(`http://0.0.0.0:5000/getUseCaseGraph?useCaseId=${useCase.id}`, {
+            const response = await fetch(`${baseURL}/getUseCaseGraph?useCaseId=${useCase.id}`, {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    'token': token,
                     'Endpoint': endpoint,
                 },
+                mode: 'cors'
             });
             const data = await response.json();
-            console.log(`use case returned ${JSON.stringify(data)}`)
-            const nodeData = await fetch(`http://0.0.0.0:5000/getNodes?useCaseId=${useCase.id}`,
-                {
-                    method: 'GET'
-                }
-            )
-            const edgeData = await fetch(`http://0.0.0.0:5000/getEdges?useCaseId=${useCase.id}`,
-                {
-                    method: 'GET'
-                }
-            )
-            const nodes = await nodeData.json();
-            const edges = await edgeData.json();
+            // console.log(`use case returned ${JSON.stringify(data)}`)
+            // const nodeData = await fetch(`http://127.0.0.1:5001/getNodes?useCaseId=${useCase.id}`,
+            //     {
+            //         method: 'GET',
+            //         mode: 'cors'
+            //     }
+            // )
+            // const edgeData = await fetch(`http://127.0.0.1:5001/getEdges?useCaseId=${useCase.id}`,
+            //     {
+            //         method: 'GET',
+            //         mode: 'cors'
+            //     }
+            // )
+            // const nodes = await nodeData.json();
+            // const edges = await edgeData.json();
+            const nodes = data.nodes;
+            const edges = data.edges;
             sessionStorage.setItem('nodes', JSON.stringify(nodes));
             sessionStorage.setItem('edges', JSON.stringify(edges));
             onUseCaseSelection(useCase.name, nodes, edges, true)

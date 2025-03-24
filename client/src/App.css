@@ -32,6 +32,13 @@
   height: 10vh;
   /* margin-top: "auto"; */
 }
+.button-container {
+  display: "flex";
+  /* flex: 1;
+  padding: 20px;
+  height: 10vh; */
+  /* margin-top: "auto"; */
+}
 
 .right-panel {
   width: 300px;
@@ -124,3 +131,25 @@ ul li {
   background-color: #f1f1f1;
 }
 
+.export-graph-button {
+  margin: 10px;
+  background-color: #007bff;
+  /* padding: 50px 20px;*/
+  color: white;
+  border: none;
+  /* border-radius: 5px; */
+  cursor: pointer;
+  width: 10%;
+  height: 10%;
+}
+.reset-button {
+  margin: 10px;
+  background-color: #007bff;
+  /* padding: 50px 20px;*/
+  color: white;
+  border: none;
+  /* border-radius: 5px; */
+  cursor: pointer;
+  width: 10%;
+  height: 10%;
+}

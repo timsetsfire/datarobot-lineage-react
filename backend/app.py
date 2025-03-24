@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 import logging
 import datarobot as dr
 import os
@@ -10,14 +10,16 @@ from create_graph_from_use_case import build_graph, write_edges, write_nodes
 logger = logging.getLogger(name = "backend-debugger")
 logger.setLevel("INFO")
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app, origins = ["http://127.0.0.1:3000", "http://localhost:3000", "http://0.0.0.0:3000"])  # Enable CORS for all routes
 local_storage = "./storage"
 
 @app.route('/ping', methods=['GET'])
+@cross_origin(origins = ["http://127.0.0.1:3000", "http://localhost:3000", "http://0.0.0.0:3000"])
 def get_data():
     return jsonify({'message': 'pong'})
 
 @app.route('/getUseCases', methods=['GET'])
+@cross_origin(origins = ["http://127.0.0.1:3000", "http://localhost:3000", "http://0.0.0.0:3000"])
 def get_use_cases():
     headers = request.headers 
     token = headers.get('Authorization', "").replace("Bearer ", "")
@@ -28,6 +30,7 @@ def get_use_cases():
     return jsonify(use_cases_list)
 
 @app.route("/getUseCaseGraph", methods = ["GET"])
+@cross_origin(origins = ["http://127.0.0.1:3000", "http://localhost:3000", "http://0.0.0.0:3000"])
 def build_use_case_graph():
     use_case_id = request.args.get("useCaseId")
     edge_output_file = os.path.join(local_storage,f"{use_case_id}_edges.json")
@@ -36,8 +39,8 @@ def build_use_case_graph():
         pass
     else:
         headers = request.headers 
-        token = headers.get('Authorization', "").replace("Bearer ", "")
-        endpoint = headers.get("Endpoint")
+        token = headers.get('token', "").replace("Bearer ", "")
+        endpoint = headers.get("endpoint")
         try:
             client = dr.Client(token=token, endpoint=endpoint)
             nodes, edges = build_graph(client, use_case_id)
@@ -48,6 +51,7 @@ def build_use_case_graph():
     return jsonify(f"use case {use_case_id} retrieved successfully")
 
 @app.route("/getEdges", methods = ["GET"])
+@cross_origin(origins = ["http://127.0.0.1:3000", "http://localhost:3000", "http://0.0.0.0:3000"])
 def get_edges():
     use_case_id = request.args.get("useCaseId")
     with open(os.path.join(local_storage,f"{use_case_id}_edges.json"), "r") as f:
@@ -55,6 +59,7 @@ def get_edges():
     return jsonify(edges)   
 
 @app.route("/getNodes", methods = ["GET"])
+@cross_origin(origins = ["http://127.0.0.1:3000", "http://localhost:3000", "http://0.0.0.0:3000"])
 def get_nodes():
     use_case_id = request.args.get("useCaseId")
     with open(os.path.join(local_storage, f"{use_case_id}_nodes.json"), "r") as f:
@@ -62,4 +67,4 @@ def get_nodes():
     return jsonify(nodes)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)

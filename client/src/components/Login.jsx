@@ -1,4 +1,5 @@
 import React, { useState }  from 'react';
+import Loader from "./Loader";
 import '../App.css';
 
 // login and grab use cases
@@ -48,7 +49,8 @@ const LoginBox = ({ onLogin }) => {
         </button>
       </form>
 
-      {isLoading && <p>Use Cases are being retrieved...</p>}
+      {/* {isLoading && <p>Use Cases are being retrieved...</p>} */}
+      {isLoading && <Loader/>}
     </div>
   );
 };

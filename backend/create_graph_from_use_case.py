@@ -280,7 +280,7 @@ def build_graph(client, use_case_id):
     projects = client.get(f"useCases/{use_case_id}/projects").json()
     registeredModels = client.get(f"useCases/{use_case_id}/registeredModels").json()
     vector_databases = client.get(f"useCases/{use_case_id}/vectorDatabases").json()
-    shared_roles = client.get(f"useCases/{use_case_id}/sharedRoles").json()
+    # shared_roles = client.get(f"useCases/{use_case_id}/sharedRoles").json(
     recipes = {'data': []}
     for d in data["data"]:
         if d["entityType"] == "RECIPE":

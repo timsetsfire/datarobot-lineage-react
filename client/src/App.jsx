@@ -4,8 +4,15 @@ import UseCases from "./components/UseCases";
 import NetworkGraph from './components/NetworkGraph';
 import NodeData from "./components/NodeData";
 import EntityList from "./components/EntityList";
+import Loader from "./components/Loader";
+import ExportGraph from './components/ExportGraph';
 import './App.css';
+// import getUseCases from "./utils/utils";
 
+const baseURL = "http://localhost:8080";
+
+console.log("checking baseURL in app.jsx")
+console.log(baseURL)   
 
 function App() {
 
@@ -40,14 +47,17 @@ function App() {
     const token = sessionStorage.getItem('token');
     const endpoint = sessionStorage.getItem('endpoint');
     try {
-      const response = await fetch('http://0.0.0.0:5000/getUseCases', {
+      const response = await fetch(`${baseURL}/getUseCases`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Endpoint': endpoint,
+          'token': token,
+          'endpoint': endpoint,
         },
+        mode: 'cors'
       });
       const data = await response.json();
+      console.log("checking use casew")
+      console.log(data)
       sessionStorage.setItem('useCases', JSON.stringify(data));
     } catch (error) {
       console.error('Error:', error);
@@ -59,15 +69,16 @@ function App() {
 
   const handleUseCaseSelection = (useCase, nodes, edges, done) => {
     setSelectedEntity(null)
+    setSelectedNode(null)
     setUseCaseSelection(useCase)
     setNodes(nodes)
     setEdges(edges)
-    setSelectedNode(null)
     setUseCaseRetrieved(done)
   };
 
   const handleEntitySelection = (event) => { 
     setSelectedEntity( event )
+    setSelectedNode(event)
   }
 
   const handleGraphReset = () => setSelectedEntity(null)
@@ -81,14 +92,23 @@ function App() {
         <div className="sidebar left-sidebar">
           <h2>Artifacts</h2>
           <EntityList nodes={nodes} onEntitySelection={handleEntitySelection} />
-            <button className="reset-button" onClick={handleGraphReset}>Reset Graph</button>
         </div>
           <div className="main-container">  
             <UseCases onUseCaseSelection={handleUseCaseSelection}/>
             <h2>Use Case Graph {useCaseSelection}</h2>
             {useCaseRetrieved ? (
+              <>
               <NetworkGraph onNodeSelect={setSelectedNode} nodes={nodes} edges={edges} selectedEntity={selectedEntity}/>
-            ) : ( <p>Retrieving Use Case, this might take a moment</p>)
+              <div className="button-container">
+              <ExportGraph nodes={nodes} edges={edges} selectedEntity={selectedEntity} filename="graph"/>
+              <button className="reset-button" onClick={handleGraphReset}>Reset Graph</button>
+              </div>
+              </>
+            ) : (
+              <Loader/>             
+              // 
+              // <p>Retrieving Use Case, this might take a moment</p>
+            )
             }
           </div>
           <NodeData selectedNode={selectedNode} nodeData={nodes} />

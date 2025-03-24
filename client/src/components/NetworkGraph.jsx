@@ -4,11 +4,11 @@ import { DataSet, DataView } from 'vis-data/peer';
 import '../App.css';
 // NetworkGraph component
 
-function getNode(id, nodes) {
+export function getNode(id, nodes) {
     return nodes.filter((item) => item.id === id)[0]
 }
 
-function getParents(id, nodes) {
+export function getParents(id, nodes) {
     let parentNodes = []
     function helper(id) {
         let n = getNode(id, nodes)
@@ -24,7 +24,7 @@ function getParents(id, nodes) {
     return parentNodes
 }
 
-function getChildren(id, nodes, edges) {
+export function getChildren(id, nodes, edges) {
     let childrenNodes = []
     function helper(id) {
         for (let j = 0; j < edges.length; j++) {
@@ -39,7 +39,7 @@ function getChildren(id, nodes, edges) {
     return childrenNodes
 }
 
-function topologicalSort(nodes, edges) {
+export function topologicalSort(nodes, edges) {
     const inDegree = {};
     const result = [];
     const queue = [];
@@ -77,7 +77,7 @@ function topologicalSort(nodes, edges) {
     return result;
 }
 
-function getVisibleNodes(selectedEntity, nodes, edges) {
+export function getVisibleNodes(selectedEntity, nodes, edges) {
     const children = getChildren(selectedEntity, nodes, edges)
     const parents = getParents(selectedEntity, nodes)
     const visibleNodes = [getNode(selectedEntity, nodes)].concat(children).concat(parents)
@@ -91,8 +91,8 @@ const NetworkGraph = ({ onNodeSelect, nodes, edges, selectedEntity }) => {
     useEffect(() => {
 
         const visibleNodes = selectedEntity != null ? getVisibleNodes(selectedEntity, nodes, edges) : null
-        const nodesDataSet = new DataSet(nodes);
         const nodesFilter = visibleNodes != null ? (node) => { return visibleNodes.includes(node.id) } : (node) => { return true }
+        const nodesDataSet = new DataSet(nodes);
         const nodesView = new DataView(nodesDataSet, { filter: nodesFilter });
         const edgesDataSet = new DataSet(edges);
         const edgesFilter = (edge) => {
