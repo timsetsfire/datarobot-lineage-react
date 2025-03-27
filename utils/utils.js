@@ -34,7 +34,6 @@ async function getUseCaseAssetsPromises(client, useCaseId) {
     const projects = uce.includes("projects") ? client.get(`useCases/${useCaseId}/projects`) :  Promise.resolve(({ data: [] }))
     const registeredModels = uce.includes("registeredModels") ? client.get(`useCases/${useCaseId}/registeredModels`) :  Promise.resolve(({ data: [] }))
     const vectorDatabases = uce.includes("vectorDatabases") ? client.get(`useCases/${useCaseId}/vectorDatabases`) :  Promise.resolve(({ data: [] }))
-    const sharedRoles = uce.includes("sharedRoles") ? client.get(`useCases/${useCaseId}/sharedRoles`) :  Promise.resolve(({ data: [] }))
     const sharedRoles = client.get(`useCases/${useCaseId}/sharedRoles`)
     return {
         applications: applications,
