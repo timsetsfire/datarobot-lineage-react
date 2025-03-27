@@ -20,19 +20,21 @@ export async function getUseCases(token, endpoint) {
 const STORAGE = "./storage";
 
 async function getUseCaseAssetsPromises(client, useCaseId) {
-    // const response = await client.get(`useCases/${useCaseId}`)
-    // const useCaseAssets = Object.keys(response.data).filter( item => item.endsWith("Count")).filter( item => response.data[item] > 0).map( item => item.replace("Count", ""))   
-    const applications = client.get(`useCases/${useCaseId}/applications`)
-    const customApplications = client.get(`useCases/${useCaseId}/customApplications`)
+    const useCase = await (client.get(`useCases/${useCaseId}`))
+    // const entities = ["projects", "applications", "customApplications", "datasets", "deployments", "notebooks", "playgrounds", "projects", "registeredModelVersions", "vectorDatabases"]
+    const uce = Object.keys(useCase.data).filter( (item) => item.includes("Count") ).map( item => item.replace("Count", ""))
+    const applications = uce.includes("applications") ? client.get(`useCases/${useCaseId}/applications`) :  Promise.resolve(({ data: [] }))
+    const customApplications = uce.includes("customApplications") ? client.get(`useCases/${useCaseId}/customApplications`) :  Promise.resolve(({ data: [] }))
     // in the data use case assets, we only care about the RECIPE entities
-    const data = client.get(`useCases/${useCaseId}/data`)
-    const datasets = client.get(`useCases/${useCaseId}/datasets`)
-    const deployments = client.get(`useCases/${useCaseId}/deployments`)
-    const notebooks = client.get(`useCases/${useCaseId}/notebooks`)
-    const playgrounds = client.get(`useCases/${useCaseId}/playgrounds`)
-    const projects = client.get(`useCases/${useCaseId}/projects`)
-    const registeredModels = client.get(`useCases/${useCaseId}/registeredModels`)
-    const vectorDatabases = client.get(`useCases/${useCaseId}/vectorDatabases`)
+    const data = uce.includes("recipes") ? client.get(`useCases/${useCaseId}/data`) :  Promise.resolve(({ data: [] }))
+    const datasets = uce.includes("datasets") ? client.get(`useCases/${useCaseId}/datasets`) :  Promise.resolve(({ data: [] }))
+    const deployments = uce.includes("deployments") ? client.get(`useCases/${useCaseId}/deployments`) :  Promise.resolve(({ data: [] }))
+    const notebooks = uce.includes("notebooks") ? client.get(`useCases/${useCaseId}/notebooks`) :  Promise.resolve(({ data: [] }))
+    const playgrounds = uce.includes("playgrounds") ? client.get(`useCases/${useCaseId}/playgrounds`) :  Promise.resolve(({ data: [] }))
+    const projects = uce.includes("projects") ? client.get(`useCases/${useCaseId}/projects`) :  Promise.resolve(({ data: [] }))
+    const registeredModels = uce.includes("registeredModels") ? client.get(`useCases/${useCaseId}/registeredModels`) :  Promise.resolve(({ data: [] }))
+    const vectorDatabases = uce.includes("vectorDatabases") ? client.get(`useCases/${useCaseId}/vectorDatabases`) :  Promise.resolve(({ data: [] }))
+    const sharedRoles = uce.includes("sharedRoles") ? client.get(`useCases/${useCaseId}/sharedRoles`) :  Promise.resolve(({ data: [] }))
     const sharedRoles = client.get(`useCases/${useCaseId}/sharedRoles`)
     return {
         applications: applications,
