@@ -52,6 +52,8 @@ const UseCases = ({ onUseCaseSelection }) => {
             // const edges = await edgeData.json();
             const nodes = data.nodes;
             const edges = data.edges;
+            console.log(`nodes ${nodes}`)
+            console.log(`edges ${edges}`)
             sessionStorage.setItem('nodes', JSON.stringify(nodes));
             sessionStorage.setItem('edges', JSON.stringify(edges));
             onUseCaseSelection(useCase.name, nodes, edges, true)

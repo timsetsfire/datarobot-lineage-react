@@ -64,11 +64,12 @@ app.get("/getUseCaseGraph", async (req, res) => {
   try {
     console.log("trying to get use cases")
     const response = await utils.buildGraph(req.headers.token, req.headers.endpoint, req.query.useCaseId);
-    // console.log("logging response")
+    console.log("use case retrieves")
     // console.log(response)
     res.json(response);
   } catch (error) {
     if (error.response) {
+      console.error(error.response)
       // API responded with an error status
       return res.status(error.response.status).json({
         status: error.response.status,
@@ -76,6 +77,7 @@ app.get("/getUseCaseGraph", async (req, res) => {
         message: error.message,
       });
     } else if (error.request) {
+      console.error(error.response)
       // No response received
       return res.status(500).json({
         message: "No response from API",

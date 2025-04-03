@@ -102,11 +102,40 @@ const NetworkGraph = ({ onNodeSelect, nodes, edges, selectedEntity }) => {
         const data = { nodes: nodesView, edges: edgesView }
 
         const options = {
+            nodes: { 
+                shape: "dot",
+                scaling: { 
+                    min: 5,
+                    // max: 30,
+                    label: { 
+                        min: 8,
+                        // max: 30, 
+                        drawThreshold: 12,
+                        // maxVisible: 20,
+                    }
+                },
+            },
+            edges: { 
+                color: 'gray',
+                width: 2, 
+                // smooth: { 
+                //     type: "continuous",
+                // },
+                arrows: { to: true }
+            },
+            physics: { enabled: true, }, 
+            layout: {
+                improvedLayout: true,  // Disable the improved layout
+                randomSeed: 2, // optional, for more deterministic behavior
+                hierarchical: {
+                  enabled: false // optional, for hierarchical layouts
+                }
+              },
             height: '100%',
             width: '100%',
-            nodes: { shape: 'dot', size: 15 },
-            edges: { color: 'gray', width: 2, arrows: { to: true } },
-            physics: { enabled: true, }
+            // nodes: { shape: 'dot', size: 15 },
+            // edges: { color: 'gray', width: 2, arrows: { to: true } },
+            // physics: { enabled: true, }
         };
 
         const container = networkRef.current;

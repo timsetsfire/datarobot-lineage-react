@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { Collapse } from 'react-collapse';
+import SearchBar from "./SearchBar";
+import AutoCompleteSearch from './AutoCompleteSearch';
 import '../App.css';
 
 const EntityList = ( {nodes, onEntitySelection}) => {
 
+    const [entities, setEntities] = useState({})
     var artifacts = {}
     for (let i = 0; i < nodes.length; i++) {
         var node = nodes[i]
@@ -21,6 +24,15 @@ const EntityList = ( {nodes, onEntitySelection}) => {
     );
 
     const [collapsed, setCollapsed] = useState(defaultCollapse);
+    
+    const [query, setQuery] = useState('');
+
+    const handleInputChange = (event) => {
+        const newQuery = event.target.value;
+        console.log(`current query: ${newQuery}`)
+        setQuery(newQuery);
+        // onSearch(newQuery); 
+    };
 
     const toggleCollapse = (entity) => {
         setCollapsed((prevState) => ({
@@ -30,8 +42,20 @@ const EntityList = ( {nodes, onEntitySelection}) => {
     }
 
     const handleEntitySelection = (entity) => { 
+        console.log(`checking log from within artifact collapsable boxes ${entity.target.id}`)
         onEntitySelection(entity.target.id)
     }
+
+    // console.log("checking flattened artifacts in EntityList")
+    // console.log(Object.values(artifacts).flat())
+    // const handleSearch = (query) => {
+    //     if (query) {
+    //       const filteredResults = Object.entries(artifacts).map( ([artifactType, artifactList]) => )
+    //       setSearchResults(filteredResults);
+    //     } else {
+    //       setSearchResults(items);
+    //     }
+    //   };
 
     const entityListHtml = Object.entries(artifacts).map(([artifactType, artifactList]) => (
         // <li className="list-item" key={artifactType} onClick={() => toggleCollapse(artifactType)}>
@@ -53,6 +77,7 @@ const EntityList = ( {nodes, onEntitySelection}) => {
 
     return (
         <div>
+            <AutoCompleteSearch items={artifacts} onEntitySelection={onEntitySelection}/>
             {entityListHtml}
         </div>
     )
