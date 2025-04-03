@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Collapse } from 'react-collapse';
-import SearchBar from "./SearchBar";
 import AutoCompleteSearch from './AutoCompleteSearch';
 import '../App.css';
 
