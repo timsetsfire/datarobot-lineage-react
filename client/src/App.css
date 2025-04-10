@@ -14,7 +14,7 @@
 }
 
 .left-sidebar {
-  width: 200px;
+  width: 250;
   padding: 20px;
   background-color: #f4f4f4;
   border-right: 1px solid #ccc;
@@ -131,25 +131,106 @@ ul li {
   background-color: #f1f1f1;
 }
 
-.export-graph-button {
+
+.export-graph-button, .reset-button {
   margin: 10px;
   background-color: #007bff;
-  /* padding: 50px 20px;*/
+  /* padding: 50px 20px; */
   color: white;
   border: none;
-  /* border-radius: 5px; */
+  border-radius: 5px;
   cursor: pointer;
-  width: 10%;
-  height: 10%;
+  width: 46%;
+  height: 10;
 }
-.reset-button {
-  margin: 10px;
+
+/* Ensure the parent container of the tabs takes up the full available height */
+
+
+/* Adjust the individual Tab component */
+.tab-content {
+  flex: true;
+  padding: 20px;  /* Add padding to the content area */
+  height: calc(100vh - 10px);  /* Adjust height to fit within the parent container */
+}
+/* 
+/* Ensure the tab titles (headers) have adequate space and don't squish */
+.nav-tabs {
+  display: flex;
+  justify-content: space-around;  /* Distribute tabs evenly */
+  flex-wrap: nowrap;  /* Prevent tabs from wrapping to the next line */
+}
+
+.nav-item {
+  flex: 1;  /* Allow tabs to expand and fill available space */
+  text-align: center;  /* Center-align the tab text */
+} */
+
+.nav-link {
+  padding: 10px 15px;  /* Adjust padding for better spacing */
+  text-align: center;
+}
+
+.nav-link.active {
+  font-weight: bold; /* Make active tab stand out */
+}
+
+/* Make sure content area takes available height and doesn't get squished */
+.tab-pane {
+  height: 100%;  /* Ensure full height for the tab content */
+} 
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 500px;
+  width: 400px;
+  margin: 0 auto;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background-color: #f9f9f9;
+}
+
+.chat-window {
+  flex-grow: 1;
+  padding: 10px;
+  overflow-y: scroll;
+}
+
+.message {
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.message.user {
+  background-color: #d1e7fd;
+  text-align: right;
+}
+
+.message.ai {
+  background-color: #e1ffe1;
+  text-align: left;
+}
+
+form {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #ccc;
+}
+
+input {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button {
+  padding: 10px;
+  border: 1px solid #007bff;
+  border-radius: 5px;
   background-color: #007bff;
-  /* padding: 50px 20px;*/
   color: white;
-  border: none;
-  /* border-radius: 5px; */
   cursor: pointer;
-  width: 10%;
-  height: 10%;
 }

@@ -3,6 +3,10 @@ const axios = require("axios");
 const path = require("path");
 const cors = require("cors");
 const utils = require("./utils/utils.js");
+const chat = require("./utils/chat.js");
+
+
+
 
 const app = express();
 
@@ -15,6 +19,8 @@ axios.defaults.baseURL = process.env.DATAROBOT_ENDPOINT;
 axios.defaults.headers.common = {
   Authorization: `Bearer ${process.env.DATAROBOT_API_TOKEN}`,
 };
+
+
 
 // Set us some of the App variables
 const PORT = process.env.PORT || 8080;
@@ -57,6 +63,36 @@ app.get("/getUseCases", async (req, res) => {
     }
   }
 });
+
+app.post("/chat", async (req, res) => {
+    const data = req.body;
+    console.log("checking data")
+    console.log(data)
+    const graphChatAgent = await chat.getOrCreateGraphChatAgent()
+    const stream = await graphChatAgent.stream(
+      {
+        messages: [{ role: "user", content: data.query }],
+      },
+      {
+        streamMode: "values"
+      }
+    )
+    result = []
+    for await (const chunk of stream) {
+      const lastMessage = chunk.messages[chunk.messages.length - 1];
+      const type = lastMessage._getType();
+      const content = lastMessage.content;
+      const toolCalls = lastMessage.tool_calls;
+      result.push( {type: type, content: content, toolCalls: toolCalls})
+      console.dir({
+        type,
+        content,
+        toolCalls
+      }, { depth: null });
+    }
+    res.send(result);
+    // res.send({"message": "Hello from the server!"});
+})
 
 app.get("/getUseCaseGraph", async (req, res) => {
   console.log(req.query)

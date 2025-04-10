@@ -1,0 +1,77 @@
+import React, { useState } from 'react';
+import axios from 'axios';
+import ReactMarkdown from 'react-markdown'; // Import react-markdown
+
+
+const baseURL = "http://localhost:8080";
+
+const Chat = () => {
+    const [messages, setMessages] = useState([]);
+    const [userInput, setUserInput] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [neo4jDataBase, setNeo4jDataBase] = useState("neo4j");
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!userInput.trim()) return;  // Don't send empty messages
+
+        // Add the user message to the conversation
+        setMessages([...messages, { text: userInput, sender: 'user' }]);
+        setUserInput('');
+        setLoading(true);
+
+        try {
+            const response = await fetch(`${baseURL}/chat`, {
+                method: 'POST',
+                headers: {"Content-Type": "application/json" },
+                body: JSON.stringify({query: userInput}),
+                redirect: 'follow',
+                mode: 'cors'
+            });
+            const data = await response.json();
+            console.dir(data)
+            const resultText = data.at(-1).content
+            // Add the response to the conversation
+            setMessages(prevMessages => [
+                ...prevMessages,
+                { text: resultText, sender: 'ai' }
+            ]);
+        } catch (error) {
+            console.error('Error fetching response from OpenAI:', error);
+        } finally {
+            setLoading(false);
+        }
+
+        console.log("messages")
+        console.log(messages)
+    };
+
+    return (
+        <div className="chat-container">
+            <div className="chat-window">
+                {messages.map((message, index) => (
+                    <div key={index} className={`message ${message.sender}`}>
+                        {message.sender === 'ai' ? (
+                            <ReactMarkdown>{message.text}</ReactMarkdown> // Render the markdown
+                        ) : (
+                            <p>{message.text}</p>
+                        )}
+                    </div>
+                ))}
+                {loading && <div className="message ai"><p>Thinking...</p></div>}
+            </div>
+            <form onSubmit={handleSubmit}>
+                <input
+                    type="text"
+                    value={userInput}
+                    onChange={(e) => setUserInput(e.target.value)}
+                    placeholder="Type your message..."
+                />
+                <button type="submit">Send</button>
+            </form>
+        </div>
+    );
+};
+
+export default Chat;
