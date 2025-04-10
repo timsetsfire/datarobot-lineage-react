@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import ReactMarkdown from 'react-markdown'; // Import react-markdown
-
-
+import RingLoader from 'react-spinners/RingLoader';
 const baseURL = "http://localhost:8080";
+import { v4 as uuid4 } from 'uuid';
 
 const Chat = () => {
     const [messages, setMessages] = useState([]);
     const [userInput, setUserInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [neo4jDataBase, setNeo4jDataBase] = useState("neo4j");
+    const [threadId, setThreadId] = useState(uuid4())
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -25,7 +26,7 @@ const Chat = () => {
             const response = await fetch(`${baseURL}/chat`, {
                 method: 'POST',
                 headers: {"Content-Type": "application/json" },
-                body: JSON.stringify({query: userInput}),
+                body: JSON.stringify({query: userInput, threadId: threadId}),
                 redirect: 'follow',
                 mode: 'cors'
             });
@@ -59,7 +60,7 @@ const Chat = () => {
                         )}
                     </div>
                 ))}
-                {loading && <div className="message ai"><p>Thinking...</p></div>}
+                {loading && <div className="message ai"><RingLoader/></div>}
             </div>
             <form className="chat-form" onSubmit={handleSubmit}>
                 <input

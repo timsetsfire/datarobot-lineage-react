@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { Neo4jGraph } from "@langchain/community/graphs/neo4j_graph";
 import { GraphCypherQAChain } from "@langchain/community/chains/graph_qa/cypher"
 import { ToolNode } from '@langchain/langgraph/prebuilt';
-import { StateGraph, MessagesAnnotation, END, START } from "@langchain/langgraph";
+import { StateGraph, MessagesAnnotation, END, START, MemorySaver } from "@langchain/langgraph";
 // const { AzureChatOpenAI } = require("@langchain/openai");
 // const { AIMessage, HumanMessage, SystemMessage } = require("@langchain/core/messages");
 // const { tool } = require('@langchain/core/tools');
@@ -111,8 +111,9 @@ export async function getOrCreateGraphChatAgent() {
         }
 
         const workflow = new StateGraph(MessagesAnnotation).addNode("agent", callModel).addNode("tools", toolNodeForGraph).addEdge(START, "agent").addConditionalEdges("agent", shouldContinue, ["tools", END]).addEdge("tools", "agent")
-
-        agent = workflow.compile()
+        const checkpointer = new MemorySaver();
+        agent = workflow.compile({checkpointer})
+        // agent = workflow.compile()
     }
     return agent
 }

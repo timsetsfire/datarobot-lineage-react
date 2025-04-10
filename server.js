@@ -74,7 +74,9 @@ app.post("/chat", async (req, res) => {
         messages: [{ role: "user", content: data.query }],
       },
       {
-        streamMode: "values"
+        streamMode: "values",
+        configurable: { thread_id: data.threadId }
+
       }
     )
     result = []
