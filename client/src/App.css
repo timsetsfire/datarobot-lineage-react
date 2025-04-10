@@ -184,7 +184,7 @@ ul li {
   display: flex;
   flex-direction: column;
   height: 500px;
-  width: 400px;
+  width: 100%;
   margin: 0 auto;
   border: 1px solid #ccc;
   border-radius: 10px;
@@ -213,23 +213,24 @@ ul li {
   text-align: left;
 }
 
-form {
+.chat-form {
   display: flex;
   padding: 10px;
   border-top: 1px solid #ccc;
 }
 
-input {
+.chat-input {
   flex-grow: 1;
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
 }
 
-button {
+.chat-button {
   padding: 10px;
   border: 1px solid #007bff;
   border-radius: 5px;
+  width: 100px;
   background-color: #007bff;
   color: white;
   cursor: pointer;

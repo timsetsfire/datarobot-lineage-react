@@ -61,14 +61,15 @@ const Chat = () => {
                 ))}
                 {loading && <div className="message ai"><p>Thinking...</p></div>}
             </div>
-            <form onSubmit={handleSubmit}>
+            <form className="chat-form" onSubmit={handleSubmit}>
                 <input
+                    className="chat-input"
                     type="text"
                     value={userInput}
                     onChange={(e) => setUserInput(e.target.value)}
                     placeholder="Type your message..."
                 />
-                <button type="submit">Send</button>
+                <button className="chat-button" type="submit">Send</button>
             </form>
         </div>
     );
