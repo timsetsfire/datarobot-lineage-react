@@ -4,7 +4,7 @@ const path = require("path");
 const cors = require("cors");
 const utils = require("./utils/utils.js");
 const chat = require("./utils/chat.js");
-
+require('dotenv').config();
 
 
 

@@ -6,6 +6,9 @@ import { Neo4jGraph } from "@langchain/community/graphs/neo4j_graph";
 import { GraphCypherQAChain } from "@langchain/community/chains/graph_qa/cypher"
 import { ToolNode } from '@langchain/langgraph/prebuilt';
 import { StateGraph, MessagesAnnotation, END, START, MemorySaver } from "@langchain/langgraph";
+import dotenv from "dotenv";
+
+dotenv.config();
 // const { AzureChatOpenAI } = require("@langchain/openai");
 // const { AIMessage, HumanMessage, SystemMessage } = require("@langchain/core/messages");
 // const { tool } = require('@langchain/core/tools');
