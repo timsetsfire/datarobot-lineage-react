@@ -68,31 +68,36 @@ app.post("/chat", async (req, res) => {
     const data = req.body;
     console.log("checking data")
     console.log(data)
-    const graphChatAgent = await chat.getOrCreateGraphChatAgent()
-    const stream = await graphChatAgent.stream(
-      {
-        messages: [{ role: "user", content: data.query }],
-      },
-      {
-        streamMode: "values",
-        configurable: { thread_id: data.threadId }
-
+    try {
+      const graphChatAgent = await chat.getOrCreateGraphChatAgent()
+      const stream = await graphChatAgent.stream(
+        {
+          messages: [{ role: "user", content: data.query }],
+        },
+        {
+          streamMode: "values",
+          configurable: { thread_id: data.threadId }
+  
+        }
+      )
+      result = []
+      for await (const chunk of stream) {
+        const lastMessage = chunk.messages[chunk.messages.length - 1];
+        const type = lastMessage._getType();
+        const content = lastMessage.content;
+        const toolCalls = lastMessage.tool_calls;
+        result.push( {type: type, content: content, toolCalls: toolCalls})
+        console.dir({
+          type,
+          content,
+          toolCalls
+        }, { depth: null });
       }
-    )
-    result = []
-    for await (const chunk of stream) {
-      const lastMessage = chunk.messages[chunk.messages.length - 1];
-      const type = lastMessage._getType();
-      const content = lastMessage.content;
-      const toolCalls = lastMessage.tool_calls;
-      result.push( {type: type, content: content, toolCalls: toolCalls})
-      console.dir({
-        type,
-        content,
-        toolCalls
-      }, { depth: null });
+      res.send(result);
+    } catch (error) { 
+      console.error("Error in chat route:", error);
+      res.send([{ content: `I'm sorry Dave, i can't do that: ${error}` }]);
     }
-    res.send(result);
     // res.send({"message": "Hello from the server!"});
 })
 

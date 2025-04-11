@@ -39,7 +39,8 @@ const Chat = () => {
                 { text: resultText, sender: 'ai' }
             ]);
         } catch (error) {
-            console.error('Error fetching response from OpenAI:', error);
+            console.error('Error Initiating Chat:', error);
+
         } finally {
             setLoading(false);
         }
