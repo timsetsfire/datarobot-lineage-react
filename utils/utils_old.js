@@ -201,13 +201,10 @@ export async function getDataStoreNode(client, useCaseData, nodes, datastoreId) 
     return {
         id: datastoreId,
         label: "datastore",
-        name: datastore.canonicalName,
-        url: path.join(baseUrl, "account", "data-connections",), 
-        assetId: datastoreId,
-        driverClassType: datastore.driverClassType,
-        apiPayload: datastore, 
+        apiPayload: datastore,
         parents: [],
-        apiUrl: path.join(client.getUri(), getDataStoreUrl(datastoreId))
+        url: path.join(baseUrl, "account", "data-connections",), 
+        apiUrl: path.join(baseUrl, getDataStoreUrl(datastoreId))
     }
 }
 
@@ -221,12 +218,10 @@ export async function getDataSourceNode(client, useCaseData, nodes, dataSourceId
     return {
         id: dataSourceId,
         label: "datasource",
-        name: name, 
-        url: path.join(baseUrl, "account", "data-connections"),
-        assetId: dataSourceId,
         apiPayload: datasource,
         parents: [parentNode],
-        apiUrl: path.join(client.getUri(), getDataSourceUrl(dataSourceId))
+        url: path.join(baseUrl, "account", "data-connections"),
+        apiUrl: getDataSourceUrl(dataSourceId)
     }
 }
 
@@ -255,12 +250,10 @@ export async function getRecipeNode(client, useCaseData, nodes, recipeId) {
     return {
         id: recipeId,
         label: "recipes",
-        name: node.name,
-        url: url,
-        assetId: recipeId,
-        apiPayload: node, 
+        apiPayload: node,
         parents: parents,
-        apiUrl: path.join(client.getUri(), getRecipeUrl(recipeId))
+        url: url,
+        apiUrl: getRecipeUrl(recipeId)
     }
 }
 
@@ -287,22 +280,15 @@ export async function getDatasetNode(client, useCaseData, nodes, datasetId, data
         return {
             id: `${datasetId}-${dataset.versionId}`,
             label: "datasets",
-            name: dataset.name,
             url: path.join(baseUrl, "registry", "data", dataset.datasetId),
-            assetId: datasetId,
-            assetVersionId: dataset.versionId,
             apiPayload: dataset,
             parents: parents,
-            apiUrl: path.join(client.getUri(), getDatasetUrl(datasetId, datasetVersionId))
-
+            apiUrl: getDatasetUrl(datasetId, datasetVersionId)
         }
     } catch (error) {
         return { 
             id: `${datasetId}-${datasetVersionId}`,
             label: "datasets",
-            url: path.join(baseUrl, "registry", "data", dataset.datasetId),
-            assetId: datasetId,
-            assetVersionId: datasetVersionId, 
             parents: [],
             error: error
         }
@@ -319,13 +305,10 @@ export async function getVectorDatabaseNode(client, useCaseData, nodes, vdbId) {
     return {
         id: `${vectorDatabase.familyId}-${vectorDatabase.id}`,
         label: "vectorDatabases",
-        name: vectorDatabase.name,
         url: url,
-        assetId: vectorDatabase.familyId,
-        assetVersionId: vectorDatabase.id,
         apiPayload: vectorDatabase,
-        parents: [datasetNode], 
-        apiUrl: path.join(client.getUri(), getVectorDatabaseUrl(vdbId))
+        parents: [datasetNode],
+        apiUrl: getVectorDatabaseUrl(vdbId)
     }
 }
 
@@ -344,14 +327,10 @@ export async function getProjectNode(client, useCaseData, nodes, projectId) {
     return {
         id: project.id,
         label: "projects",
-        name: project.projectName,
         url: url,
-        assetId: project.id,
-        targetType: project.targetType,
-        datasource: datasetId ? "registry" : "local",
         apiPayload: project,
         parents: parents,
-        apiUrl: path.join(client.getUri(), getProjectUrl(projectId))
+        apiUrl: getProjectUrl(projectId)
     }
 }
 
@@ -365,11 +344,10 @@ export async function getModelNode(client, useCaseData, nodes, modelId, projectI
     return {
         id: modelId,
         label: "models",
-        name: `${model.modelType} ${model.modelNumber}`,
         url: path.join(baseUrl, "projects", projectId, "models", modelId),
-        assetId: modelId,
         apiPayload: model,
         parents: parents,
+        apiUrl: getModelFromProjectId(modelId, projectId)
     }
 }
 
@@ -389,12 +367,10 @@ export async function getCustomModelVersionNode(client, customModelId, customMod
     return {
         id: `${customModelId}-${cmvId}`,
         label: "customModelVersion",
-        name: customModel.name,
         url: url,
-        assetId: customModelId,
-        assetVersionId: cmvId,
         apiPayload: {...customModel, ...customModelVersion},
         parents: [],
+        apiUrl: getCustomModelVersionUrl(customModelId, cmvId)
     }
 }
 
@@ -418,12 +394,10 @@ export async function getRegisteredModelNode(client, useCaseData, nodes, regMode
     return {
         id: `${regModelId}-${regModelVersionId}`,
         label: "registeredModels",
-        name: regModel.name,
-        url: url,
-        assetId: regModelId,
-        assetVersionId: regModelVersionId,
+        url: url, 
         apiPayload: regModel,
-        parents: parents
+        parents: parents,
+        apiUrl: getRegisteredModelUrl(regModelId, regModelVersionId)
     }
 
 }
@@ -440,20 +414,18 @@ export async function getDeploymentNode(client, useCaseData, nodes, deploymentId
     return {
         id: deployment.id,
         label: "deployments",
-        name: deployment.label,
         url: url,
-        assetId: deployment.id,
         apiPayload: deployment,
-        parents: parents
-
+        parents: parents,
+        apiUrl: getDeploymentUrl(deploymentId)
     }
 }
 
 export async function getLlmNode(client, llmId) {
     return {
+        assetId: llmId,
         id: llmId,
         label: "llm",
-        assetId: llmId,
         parents: []
     }
 }
@@ -466,11 +438,10 @@ export async function getPlaygroundNode(client, useCaseData, nodes, playgroundId
     return {
         id: playgroundId,
         label: "playgrounds",
-        name: playground.name,
         url: url,
-        assetId: playgroundId,
         apiPayload: playground, 
-        parents: []
+        parents: [],
+        apiUrl: getPlaygroundUrl(playgroundId)
     }
 }
 
@@ -491,11 +462,10 @@ export async function getLlmBlueprintNode(client, useCaseData, nodes, llmBluepri
     return {
         id: llmBp.id,
         label: "llmBlueprint",
-        name: llmBp.name,
         url: url,
-        assetId: llmBp.id,
         apiPayload: llmBp,
-        parents: parents
+        parents: parents,
+        apiUrl: getLLMBlueprintUrl(playgroundId)
     }
 
 }

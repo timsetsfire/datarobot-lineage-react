@@ -6,13 +6,13 @@ dotenv.config();
 
 let neo4jGraph = null;
 
-async function getOrCreateNeo4jGraph() { 
+export async function getOrCreateNeo4jGraph() { 
     if (!neo4jGraph) {
         const NEO4J_URL = process.env.NEO4J_URL;
         const NEO4J_USERNAME = process.env.NEO4J_USERNAME;
         const NEO4J_PASSWORD = process.env.NEO4J_PASSWORD;
 
-        neo4jGraph = Neo4jGraph.initialize({
+        neo4jGraph = await Neo4jGraph.initialize({
             url: NEO4J_URL,
             username: NEO4J_USERNAME,
             password: NEO4J_PASSWORD,
@@ -20,3 +20,4 @@ async function getOrCreateNeo4jGraph() {
     }
     return neo4jGraph;
 }
+

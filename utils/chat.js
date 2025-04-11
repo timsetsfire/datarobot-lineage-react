@@ -7,6 +7,7 @@ import { GraphCypherQAChain } from "@langchain/community/chains/graph_qa/cypher"
 import { ToolNode } from '@langchain/langgraph/prebuilt';
 import { StateGraph, MessagesAnnotation, END, START, MemorySaver } from "@langchain/langgraph";
 import dotenv from "dotenv";
+import { getOrCreateNeo4jGraph } from "./gdb.js";
 
 dotenv.config();
 // const { AzureChatOpenAI } = require("@langchain/openai");
@@ -43,18 +44,22 @@ export async function getOrCreateGraphChatAgent() {
             // azureOpenAIBasePath: "https://datarobot-genai-enablement.openai.azure.com/"
         })
 
-        const graph = await Neo4jGraph.initialize({
-            url: NEO4J_URL,
-            username: NEO4J_USERNAME,
-            password: NEO4J_PASSWORD,
-            database: "neo4j",
-        })
+        // const graph = await Neo4jGraph.initialize({
+        //     url: NEO4J_URL,
+        //     username: NEO4J_USERNAME,
+        //     password: NEO4J_PASSWORD,
+        //     database: "neo4j",
+        // })
+
+
+        const graph = await getOrCreateNeo4jGraph()
 
         await graph.refreshSchema();
 
         const graphCypherQAChain = GraphCypherQAChain.fromLLM({ cypherLLM: llm, qaLLM: llm, graph: graph, verbose: true, returnIntermediateSteps: true });
 
         const queryGraph = tool(async (input) => {
+            console.log("in query_graph_database tool")
             console.log(`input has value ${input.query}`)
             let res = await graphCypherQAChain.invoke({ query: input.query });
             try {
@@ -71,21 +76,21 @@ export async function getOrCreateGraphChatAgent() {
         })
 
         const interpretResults = tool(async (input) => {
-            console.log(input)
+            console.log("in interpret_result tool")
             let aiMessage = new AIMessage({ content: `assume that context contains the answer to userQuery\nuserQuery: ${input.userQuery}\ncontext: ${input.context}\n\nyour answer:` })
-            let res = await model.invoke([aiMessage])
+            let res = await llm.invoke([aiMessage])
             return res
         },
             {
                 name: 'interpret_results',
-                description: 'this tool queries the graph database and should be used when asked questions about relationships between item',
+                description: 'use this tool to systhesis and interpret results that are obtained from query_graph_database tool',
                 schema: z.object({
                     userQuery: z.string().describe("The original user query"),
                     context: z.string().describe("context obtained from the graph query"),
                 })
             })
 
-        const tools = [queryGraph]
+        const tools = [queryGraph, interpretResults]
 
         const llmWithTools = new AzureChatOpenAI({
             model: "gpt-4o",
