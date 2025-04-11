@@ -4,6 +4,7 @@ const path = require("path");
 const cors = require("cors");
 const utils = require("./utils/utils.js");
 const chat = require("./utils/chat.js");
+const gdb = require("./utils/gdb.js");
 require('dotenv').config();
 
 
@@ -106,10 +107,16 @@ app.get("/getUseCaseGraph", async (req, res) => {
   // console.log(req)
   try {
     console.log("trying to get use cases")
-    const response = await utils.buildGraph(req.headers.token, req.headers.endpoint, req.query.useCaseId);
+    const graph = await utils.buildGraph(req.headers.token, req.headers.endpoint, req.query.useCaseId);
     console.log("use case retrieves")
     // console.log(response)
-    res.json(response);
+    try { 
+      gdb.populateNeo4jGraph(graph)
+      console.log("graph populated")
+    } catch(error) { 
+      console.error("Error populating graph:", error);
+    }
+    res.json(graph);
   } catch (error) {
     if (error.response) {
       console.error(error.response)
