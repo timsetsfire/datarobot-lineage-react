@@ -111,10 +111,10 @@ app.get("/getUseCaseGraph", async (req, res) => {
     console.log("use case retrieves")
     // console.log(response)
     try { 
-      gdb.populateNeo4jGraph(graph)
+      await gdb.populateNeo4jGraph(graph)
       console.log("graph populated")
     } catch(error) { 
-      console.error("Error populating graph:", error);
+      console.error("something went wrong when populated the graph.  make sure you have an instance of neo4j running and accessible")
     }
     res.json(graph);
   } catch (error) {
