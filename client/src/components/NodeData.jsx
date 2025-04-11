@@ -33,10 +33,10 @@ const NodeData = ({ selectedNode, nodeData }) => {
         } else if (key === "id") { 
             return (
                 <>
-                <strong>Entity Id - Entity Version Id</strong><p>{value}</p>
+                <strong>{key.split("-").length > 1 ? "Entity Id - Entity Version Id": "Entity Id"}</strong><p>{value}</p>
                 </>
             )
-        } else if (key === "apiUrl" || key === "id") { 
+        } else if ( ["apiUrl", "id", "useCaseId", "useCaseName"].includes(key)) { 
             {}
         } else if (key === "parents") {
             return (<>
