@@ -294,7 +294,7 @@ export async function getDatasetNode(client, useCaseData, nodes, datasetId, data
             id: `${datasetId}-${dataset.versionId}`,
             label: "datasets",
             name: dataset.name,
-            url: path.join(baseUrl, "registry", "data", dataset.datasetId),
+            url: path.join(baseUrl, "registry", "data", datasetId),
             assetId: datasetId,
             assetVersionId: dataset.versionId,
             apiPayload: dataset,
