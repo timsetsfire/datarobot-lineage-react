@@ -4,6 +4,8 @@ import path from "path";
 import fs from "fs";
 
 // url related functions 
+const getApplicationUrl = (applicationId) => `applications/${applicationId}`
+const getCustomApplicationUrl = (customApplicationId) => `customApplications/${customApplicationId}`
 const getCustomModelVersionUrl = (customModelId, customModelVersionId) => `customModels/${customModelId}/versions/${customModelVersionId}`
 const getDataStoreUrl = (dataStoreId) => `externalDataStores/${dataStoreId}`
 const getDataSourceUrl = (dataSourceId) => `externalDataSources/${dataSourceId}`
@@ -23,8 +25,8 @@ const STORAGE = "./storage";
 
 export function getUseCaseAssetsUrls(useCaseAssets) {
 
-    // const applications = useCaseAssets.applications 
-    // const customApplications = useCaseAssets.customApplications
+    const applications = useCaseAssets.applications ? useCaseAssets.applications.map( item => getApplicationUrl(item.applicationId)) : []
+    const customApplications = useCaseAssets.customApplications ? useCaseAssets.customApplications.map( item => getCustomApplicationUrl(item.id)) : []
     const recipes = useCaseAssets.recipes ? useCaseAssets.recipes.filter(item => item.entityType === "RECIPE").map(item => getRecipeUrl( item.entityId)) : []
     const datasets = useCaseAssets.datasets ? useCaseAssets.datasets.map(item => getDatasetUrl( item.datasetId, item.versionId)) : []
     const deployments = useCaseAssets.deployments ? useCaseAssets.deployments.map(item => getDeploymentUrl( item.id)) : []
@@ -44,8 +46,8 @@ export function getUseCaseAssetsUrls(useCaseAssets) {
     const vectorDatabases = useCaseAssets.vectorDatabases ? useCaseAssets.vectorDatabases.map(item => getVectorDatabaseUrl( item.id)) : []
     const sharedRoles = useCaseAssets.sharedRoles ? useCaseAssets.sharedRoles.map(item => ({ data: item })) : []
     const urls = {
-        // applications: applications,
-        // customApplications: customApplications,
+        applications: applications,
+        customApplications: customApplications,
         recipes: recipes,
         datasets: datasets,
         deployments: deployments,
@@ -193,6 +195,69 @@ export async function getUseCaseData(client, useCaseAssetsUrls) {
 //todo add applications and custom applications
 
 // get nodes
+export async function getApplicationNode(client, useCaseData, nodes, applicationId) { 
+    const baseUrl = client.getUri().replace("/api/v2", "")
+    const app = useCaseData.applications.filter(item => item.id ===  applicationId)[0]
+    const application = app ? app : await fetchDataWithRetry(client, getApplicationUrl(applicationId))
+    const relatedDeploymentIds = application.deploymentIds
+    const relatedEntities = application.relatedEntities 
+    const relatedModelId = relatedEntities.modelId 
+    const relatedProjectId = relatedEntities.projectId
+    const parents = []
+    if( relatedModelId) { 
+        parents.push( getModelNode(client, useCaseData, nodes, relatedModelId, relatedProjectId))
+    }
+    if(relatedDeploymentIds.length > 0) {
+        relatedDeploymentIds.forEach( deploymentId => {
+            parents.push( getDeploymentNode(client, useCaseData, nodes, deploymentId))
+        })
+    }
+    return { 
+        id: applicationId, 
+        label: "applications", 
+        name: application.name, 
+        url: path.join(baseUrl, "useCases", useCaseData.useCaseId, "overview/apps/no-code-applications"), 
+        assetId: applicationId, 
+        apiPayload: application, 
+        parents: parents, 
+        useCaseId: useCaseData.useCaseId, 
+        useCaseName: useCaseData.useCaseName
+    }   
+}
+
+export async function getCustomApplicationNode(client, useCaseData, nodes, customApplicationId) { 
+    const baseUrl = client.getUri().replace("/api/v2", "")
+    const app = useCaseData.applications.filter(item => item.id ===  customApplicationId)[0]
+    const application = app ? app : await fetchDataWithRetry(client, getCustomApplicationUrl(customApplicationId))    
+    return { 
+        id: customApplicationId, 
+        label: "customApplications", 
+        name: application.name, 
+        url: application.applicationUrl, 
+        assetId: customApplicationId, 
+        apiPayload: application, 
+        parents: [ getCustomApplicationSourceNode(client, useCaseData, nodes, application.customApplicationSourceId, application.customApplicationSourceVersionId, customApplicationId)], 
+        useCaseId: useCaseData.useCaseId, 
+        useCaseName: useCaseData.useCaseName
+    }
+}
+
+export async function getCustomApplicationSourceNode(client, useCaseData, nodes, sourceId, sourceVersionId, customApplicationId) {
+    const baseUrl = client.getUri().replace("/api/v2", "")
+    return { 
+        id: `${sourceId}-${sourceVersionId}`, 
+        label: "customApplicationSources", 
+        name: "custom-app-source",
+        url: path.join(baseUrl, "registry/applications", sourceId, "app-info", customApplicationId), 
+        assetId: sourceId, 
+        assetVersionId: sourceVersionId,
+        apiPayload: {},
+        parents: [], 
+        useCaseId: useCaseData.useCaseId, 
+        useCaseName: useCaseData.useCaseName
+    }
+}
+
 export async function getDataStoreNode(client, useCaseData, nodes, datastoreId) {
     const baseUrl = client.getUri().replace("/api/v2", "")
     const ds = useCaseData.datastores.filter(item => item.id ===  datastoreId)[0]
@@ -305,10 +370,12 @@ export async function getDatasetNode(client, useCaseData, nodes, datasetId, data
 
         }
     } catch (error) {
+        console.log(error)
+        console.log(`some error with dataset ${datasetId}`)
         return { 
             id: `${datasetId}-${datasetVersionId}`,
             label: "datasets",
-            url: path.join(baseUrl, "registry", "data", dataset.datasetId),
+            url: path.join(baseUrl, "registry", "data", datasetId),
             assetId: datasetId,
             assetVersionId: datasetVersionId, 
             parents: [],
@@ -561,6 +628,8 @@ export async function resolveNestedParents(input) {
 
 export async function getUseCaseNodes(client, useCaseData) {
     const nodes = {datasets: {}, dataSources: {}, recipes: {}, projects: {}, models: {}, dataStores: {}, vectorDatabases: {}, registeredModels: {}, deployments: {}, playgrounds: {}, llmBlueprints: {}, llms: {}}
+
+
     const dataStoreNodes = await Promise.all(useCaseData.datastores.map( async item =>  await getDataStoreNode(client, useCaseData, [], item.id) ))
     nodes["dataStores"] = Object.fromEntries(dataStoreNodes.map( node => [node.id, node] ))
     console.log("datastore nodes are done")
@@ -587,25 +656,21 @@ export async function getUseCaseNodes(client, useCaseData) {
     console.log("deployment nodes are done")
     const vectorDatabaseNodes = await Promise.all(useCaseData.vectorDatabases.map( async vdb => await getVectorDatabaseNode(client, useCaseData, nodes, vdb.id))) 
     nodes["vectorDatabases"] = vectorDatabaseNodes
+    console.log("vector databases are done")
     const llmBlueprintNodes = await Promise.all(useCaseData.llmBlueprints.map( async llmBlueprint => await getLlmBlueprintNode(client, useCaseData, nodes, llmBlueprint.id))) 
     nodes["llmBlueprints"] = Object.fromEntries( llmBlueprintNodes.map( node => [node.id, node])) 
     console.log("llm blueprints nodes are done")
     const playgroundNodes = await Promise.all(useCaseData.playgrounds.map( async playground => await getPlaygroundNode(client, useCaseData, nodes, playground.id))) 
     nodes["playgrounds"] = Object.fromEntries( playgroundNodes.map( node => [node.id, node])) 
     console.log("playground nodes are done")
+    const applicationNodes = await Promise.all(useCaseData.applications.map( async item =>  await getApplicationNode(client, useCaseData, nodes, item.id) ))
+    nodes["applications"] = Object.fromEntries(applicationNodes.map( node => [node.id, node] ))
+    const customApplicationNodes = await Promise.all(useCaseData.customApplications.map( async item =>  await getCustomApplicationNode(client, useCaseData, nodes, item.id) ))
+    nodes["customApplications"] = Object.fromEntries(customApplicationNodes.map( node => [node.id, node] ))
+
     delete nodes.dataSources
     delete nodes.dataStores
-    // const nodes = {
-    //     recipeNodes: useCaseData.recipes.map(recipe => getRecipeNode(client, useCaseData, nodes, recipe.recipeId)),
-    //     datasetNodes: useCaseData.datasets.map(dataset => getDatasetNode(client, useCaseData, dataset.datasetId, dataset.versionId)),
-    //     vdbNodes: useCaseData.vectorDatabases.map(vdb => getVectorDatabaseNode(client, useCaseData, vdb.id)),
-    //     projectNodes: useCaseData.projects.map(proj => getProjectNode(client, useCaseData, proj.id)),
-    //     modelNodes: useCaseData.models.map(msodel => getModelNode(client, useCaseData, model.id, model.projectId)),
-    //     registeredModelNodes: useCaseData.registeredModels.map(regModel => getRegisteredModelNode(client, useCaseData, regModel.registeredModelId, regModel.id)),
-    //     deploymentNodes: useCaseData.deployments.map(dep => getDeploymentNode(client, useCaseData, dep.id)),
-    //     llmBlueprintNodes: useCaseData.llmBlueprints.map(llmBp => getLlmBlueprintNode(client, useCaseData, llmBp.id)),
-    //     playgroundNodes: useCaseData.playgrounds.map(playground => getPlaygroundNode(client, useCaseData, playground.id)),
-    // }
+
     const results = {}
     for (const key in nodes) {
         if (nodes.hasOwnProperty(key)) {
