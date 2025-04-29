@@ -8,15 +8,14 @@ export function getNode(id, nodes) {
     return nodes.filter((item) => item.id === id)[0]
 }
 
-export function getParents(id, nodes) {
+export function getParents(id, nodes, edges) { 
     let parentNodes = []
     function helper(id) {
-        let n = getNode(id, nodes)
-        let parents = n.parents || []
-        if (parents.length > 0) {
-            for (let j = 0; j < parents.length; j++) {
-                parentNodes.push(getNode(parents[j].id, nodes))
-                helper(parents[j].id)
+        for (let j = 0; j < edges.length; j++) {
+            if (id === edges[j].to) {
+                let parent = getNode(edges[j].from, nodes)
+                parentNodes.push(parent)
+                helper(edges[j].from)
             }
         }
     }
@@ -79,7 +78,7 @@ export function topologicalSort(nodes, edges) {
 
 export function getVisibleNodes(selectedEntity, nodes, edges) {
     const children = getChildren(selectedEntity, nodes, edges)
-    const parents = getParents(selectedEntity, nodes)
+    const parents = getParents(selectedEntity, nodes, edges)
     const visibleNodes = [getNode(selectedEntity, nodes)].concat(children).concat(parents)
     return visibleNodes.map((item) => item.id)
 }

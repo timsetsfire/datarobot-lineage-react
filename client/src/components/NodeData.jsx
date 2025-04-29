@@ -1,5 +1,5 @@
 
-
+import React, { useState }  from 'react';
 
 
 const NodeData = ({ selectedNode, nodeData }) => {
@@ -12,6 +12,17 @@ const NodeData = ({ selectedNode, nodeData }) => {
             }
         }
     }
+    const [isPayloadOpen, setIsPayloadOpen] = useState(false);
+    const [isParentsOpen, setIsParentsOpen] = useState(false);
+
+    const togglePayloadCollapse = () => {
+        setIsPayloadOpen(!isPayloadOpen);
+    };
+
+    const toggleParentsCollapse = () => {
+        setIsParentsOpen(!isParentsOpen);
+    };
+
 
     // create html to populate the node data sidebar
     function returnNodeHtml(key, value) {
@@ -19,9 +30,35 @@ const NodeData = ({ selectedNode, nodeData }) => {
             return (<>
                 <strong>{key}</strong><p><a href={node[key]}>See asset in DataRobot</a></p>
             </>)
+        } else if (key === "id") { 
+            return (
+                <>
+                <strong>{key.split("-").length > 1 ? "Entity Id - Entity Version Id": "Entity Id"}</strong><p>{value}</p>
+                </>
+            )
+        } else if ( ["apiUrl", "id", "useCaseId", "useCaseName"].includes(key)) { 
+            {}
         } else if (key === "parents") {
             return (<>
-                <strong>parents</strong><pre id="json">{JSON.stringify(value, null, 2)}</pre>
+                <strong onClick={toggleParentsCollapse} style={{ cursor: 'pointer' }}>
+                    {isParentsOpen ? '▼' : '▶'} parents
+                </strong>
+                {isParentsOpen && (
+                    <pre id="json">
+                        {JSON.stringify(value, null, 2)}
+                    </pre>
+                )}
+            </>)
+        } else if (key === "apiPayload") {
+            return (<>
+                <strong onClick={togglePayloadCollapse} style={{ cursor: 'pointer' }}>
+                    {isPayloadOpen ? '▼' : '▶'} api payload
+                </strong>
+                {isPayloadOpen && (
+                    <pre id="json">
+                        {JSON.stringify(value, null, 2)}
+                    </pre>
+                )}
             </>)
         } else {
             return (<>
@@ -40,7 +77,7 @@ const NodeData = ({ selectedNode, nodeData }) => {
                 <p><strong>Node ID:</strong> {selectedNode}</p>
                 {Object.entries(node).map(([key, value]) => (
                     <div key={key}>
-                    {returnNodeHtml(key, value)}
+                        {returnNodeHtml(key, value)}
                     </div>
                 ))}
             </div>

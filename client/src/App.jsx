@@ -6,6 +6,10 @@ import NodeData from "./components/NodeData";
 import EntityList from "./components/EntityList";
 import Loader from "./components/Loader";
 import ExportGraph from './components/ExportGraph';
+import Chat from "./components/Chat";
+import { Tab, Tabs, Dropdown, DropdownButton, DropdownItem } from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 import './App.css';
 // import getUseCases from "./utils/utils";
 
@@ -16,6 +20,7 @@ console.log(baseURL)
 
 function App() {
 
+  const [activeTab, setActiveTab] = useState('explore-data');
   // console.log(sessionStorage)
   const [selectedNode, setSelectedNode] = useState(null);
   const [nodes, setNodes] = useState([])
@@ -93,9 +98,13 @@ function App() {
           <h2>Artifacts</h2>
           <EntityList nodes={nodes} onEntitySelection={handleEntitySelection} />
         </div>
+
           <div className="main-container">  
+            <Tabs id="controlled-tab-example" activeKey={activeTab} onSelect={(k) => setActiveTab(k)} className="mb-3">
+
+            <Tab eventKey="explore-data" title="Explore Data">
             <UseCases onUseCaseSelection={handleUseCaseSelection}/>
-            <h2>Use Case Graph {useCaseSelection}</h2>
+            {/* <h2>Use Case Graph {useCaseSelection}</h2> */}
             {useCaseRetrieved ? (
               <>
               <NetworkGraph onNodeSelect={setSelectedNode} nodes={nodes} edges={edges} selectedEntity={selectedEntity}/>
@@ -110,6 +119,12 @@ function App() {
               // <p>Retrieving Use Case, this might take a moment</p>
             )
             }
+            </Tab>
+            <Tab eventKey="chat" title="Chat with your Data">
+              <h2>Use Case {useCaseSelection}</h2>
+              <Chat />
+            </Tab>
+          </Tabs>
           </div>
           <NodeData selectedNode={selectedNode} nodeData={nodes} />
         </>
