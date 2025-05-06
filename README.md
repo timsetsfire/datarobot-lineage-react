@@ -15,7 +15,22 @@ npm start
 
 ## Utilizing chat (in process)
 
-need a running instance of neo4j
+need a running instance of neo4j.  
+
+### Using AuraDB
+
+The easiest path is to create a free [neo4j auradb instance](https://neo4j.com/product/auradb)
+
+You'll need to create login, then create an instance.  
+
+__MAKE SURE TO DOWNLOAD THE PASSWORD__
+
+After the instance is created, you will need the instance URI.   
+![alt ext](image.png)
+
+Add the password and the instance URI to `.env` file as `NEO4J_PASSWORD` and `NEO4J_URL`.  
+
+### Using Docker locally
 
 ```
 docker run \
@@ -28,8 +43,4 @@ docker run \
     neo4j:2025.01
 ```
 
-every time you start the docker image, you should login to the neo4j UI at localhost:7474.  user and pword is neo4j.  You MUST reset the password and update `.env` before using the chat piece of the app
-
-TODO: add a mechanism to push data to neo4j from server.js
-
-
+every time you start the docker image, you should login to the neo4j UI at localhost:7474.  user and password is neo4j.  You MUST reset the password and update `.env` before using the chat piece of the app
