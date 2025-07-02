@@ -4,6 +4,19 @@ Focused on building dependency graphs for DataRobot Use Cases
 
 Uses react and a node.js backend.  
 
+## Key Dependencies
+
+**Frontend (Client):**
+- React 19.0.0 - Core UI framework
+- React Bootstrap - UI components and styling
+- Vite - Build tool and development server
+- vis-network - Network graph visualization
+- Axios - HTTP client for API calls
+
+**Backend:**
+- Node.js - Server runtime
+- Neo4j - Graph database for data lineage
+
 ## Usage 
 
 ```
@@ -44,3 +57,19 @@ docker run \
 ```
 
 every time you start the docker image, you should login to the neo4j UI at localhost:7474.  user and password is neo4j.  You MUST reset the password and update `.env` before using the chat piece of the app
+
+## Troubleshooting
+
+### Build Errors
+
+**"Rollup failed to resolve import 'react-bootstrap'"**
+
+This error occurs when the react-bootstrap dependency is missing. Ensure all dependencies are installed:
+
+```bash
+cd client
+npm install
+npm run build
+```
+
+If the error persists, check that `react-bootstrap` and `bootstrap` are listed in `client/package.json` dependencies.
