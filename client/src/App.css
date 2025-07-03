@@ -132,26 +132,71 @@ ul li {
 }
 
 
-.export-graph-button, .reset-button {
+.export-graph-button, .reset-button, .debug-button {
   margin: 10px;
   background-color: #007bff;
-  /* padding: 50px 20px; */
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  width: 46%;
-  height: 10;
+  width: 24%;
+  height: auto;
+  padding: 8px 12px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.export-graph-button:hover, .reset-button:hover {
+  background-color: #0056b3;
+  transform: translateY(-1px);
+}
+
+.debug-button {
+  background-color: #6c757d;
+}
+
+.debug-button:hover {
+  background-color: #545b62;
+  transform: translateY(-1px);
+}
+
+/* Button Container Enhanced */
+.button-container {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 15px 0;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
 }
 
 /* Ensure the parent container of the tabs takes up the full available height */
-
 
 /* Adjust the individual Tab component */
 .tab-content {
   flex: true;
   padding: 20px;  /* Add padding to the content area */
   height: calc(100vh - 10px);  /* Adjust height to fit within the parent container */
+}
+
+/* Network Graph Fade Animation */
+@keyframes fadeInGraph {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.network-graph-container {
+  animation: fadeInGraph 0.6s ease-out;
 }
 /* 
 /* Ensure the tab titles (headers) have adequate space and don't squish */
@@ -224,6 +269,273 @@ ul li {
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
+}
+
+/* Color Legend Styles */
+.color-legend {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  margin: 10px 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.legend-header {
+  padding: 12px 16px;
+  cursor: pointer;
+  background-color: #e9ecef;
+  border-radius: 8px 8px 0 0;
+  user-select: none;
+  transition: background-color 0.2s;
+}
+
+.legend-header:hover {
+  background-color: #dee2e6;
+}
+
+.legend-header h4 {
+  margin: 0;
+  font-size: 16px;
+  color: #495057;
+}
+
+.legend-content {
+  padding: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.legend-category {
+  margin-bottom: 16px;
+}
+
+.legend-category:last-child {
+  margin-bottom: 0;
+}
+
+.legend-category h5 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #6c757d;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 4px 0;
+}
+
+.legend-color-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  margin-right: 12px;
+  border: 2px solid rgba(0,0,0,0.1);
+  flex-shrink: 0;
+}
+
+.legend-text {
+  font-size: 13px;
+  color: #495057;
+  line-height: 1.4;
+}
+
+.legend-text strong {
+  color: #212529;
+}
+
+.node-count {
+  color: #6c757d;
+  font-weight: normal;
+  margin-left: 4px;
+}
+
+/* Graph Controls */
+.graph-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 10px 0;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.graph-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.graph-search input {
+  padding: 6px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+  width: 200px;
+}
+
+.graph-search button {
+  padding: 6px 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  width: auto;
+}
+
+.graph-search button:hover {
+  background-color: #0056b3;
+}
+
+.graph-stats {
+  font-size: 14px;
+  color: #6c757d;
+}
+
+/* Floating Legend Toggle */
+.floating-legend-toggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all 0.3s ease;
+}
+
+.floating-legend-toggle:hover {
+  background-color: #0056b3;
+  transform: scale(1.1);
+}
+
+.floating-legend-toggle.active {
+  background-color: #28a745;
+}
+
+/* Node Hover Tooltip */
+.node-tooltip {
+  position: fixed;
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  max-width: 300px;
+  z-index: 1001;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.node-tooltip strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #ffc107;
+}
+
+/* Pulsing highlight animation */
+@keyframes pulse-highlight {
+  0% { 
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7);
+    border-color: #ffc107;
+  }
+  70% { 
+    box-shadow: 0 0 0 10px rgba(255, 193, 7, 0);
+    border-color: #ffc107;
+  }
+  100% { 
+    box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
+    border-color: #ffc107;
+  }
+}
+
+.node-highlighted {
+  animation: pulse-highlight 1.5s infinite;
+}
+
+/* Mini Mode Toggle */
+.mini-mode-toggle {
+  padding: 8px 12px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  margin: 5px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mini-mode-toggle label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin: 0;
+}
+
+.mini-mode-toggle input[type="checkbox"] {
+  margin-right: 8px;
+  width: auto;
+}
+
+.toggle-label {
+  font-size: 14px;
+  color: #495057;
+  user-select: none;
+}
+
+.mini-mode-info {
+  margin-left: 24px;
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* Edge Legend Styles */
+.edge-legend {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  margin: 10px 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.edge-legend-line {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 4px 0;
+}
+
+.edge-legend-text {
+  font-size: 13px;
+  color: #495057;
+  line-height: 1.4;
+}
+
+.edge-legend-text strong {
+  color: #212529;
+}
+
+.edge-count {
+  color: #6c757d;
+  font-weight: normal;
+  margin-left: 4px;
 }
 
 .chat-button {
