@@ -33,14 +33,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Set up Axios to enable communication with the DataRobot
-axios.defaults.baseURL = process.env.DATAROBOT_ENDPOINT;
-axios.defaults.headers.common = {
-  Authorization: `Bearer ${process.env.DATAROBOT_API_TOKEN}`,
-};
-
-
-
 // Set us some of the App variables
 const PORT = process.env.PORT || 8080;
 console.log(`__DIRNAME = ${__dirname}`)
