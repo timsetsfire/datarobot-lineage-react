@@ -1,4 +1,3 @@
-
 import React, { useState }  from 'react';
 
 
@@ -23,6 +22,16 @@ const NodeData = ({ selectedNode, nodeData }) => {
         setIsParentsOpen(!isParentsOpen);
     };
 
+    // Helper function to safely render values
+    const renderValue = (value) => {
+        if (value === null || value === undefined) {
+            return 'N/A';
+        }
+        if (typeof value === 'object') {
+            return JSON.stringify(value);
+        }
+        return String(value);
+    };
 
     // create html to populate the node data sidebar
     function returnNodeHtml(key, value) {
@@ -33,7 +42,7 @@ const NodeData = ({ selectedNode, nodeData }) => {
         } else if (key === "id") { 
             return (
                 <>
-                <strong>{key.split("-").length > 1 ? "Entity Id - Entity Version Id": "Entity Id"}</strong><p>{value}</p>
+                <strong>{key.split("-").length > 1 ? "Entity Id - Entity Version Id": "Entity Id"}</strong><p>{renderValue(value)}</p>
                 </>
             )
         } else if ( ["apiUrl", "id", "useCaseId", "useCaseName"].includes(key)) { 
@@ -62,7 +71,7 @@ const NodeData = ({ selectedNode, nodeData }) => {
             </>)
         } else {
             return (<>
-                <strong>{key}</strong><p>{value}</p>
+                <strong>{key}</strong><p>{renderValue(value)}</p>
             </>)
         }
 

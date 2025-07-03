@@ -24,8 +24,13 @@ const UseCases = ({ onUseCaseSelection }) => {
         const endpoint = sessionStorage.getItem('endpoint');
         setSelectedUseCaseId(selectedUseCaseId);  // Update the state with the selected id
         const useCase = useCases.find(item => item.id === selectedUseCaseId);
+        
+        console.log(`🔍 Loading use case: ${useCase.name} (ID: ${useCase.id})`);
         onUseCaseSelection(useCase.name, [], [], false)
+        
+        const startTime = Date.now();
         try {
+            console.log(`⏳ Fetching graph data for ${useCase.name}...`);
             const response = await fetch(`${baseURL}/getUseCaseGraph?useCaseId=${useCase.id}`, {
                 method: 'GET',
                 headers: {
@@ -34,31 +39,28 @@ const UseCases = ({ onUseCaseSelection }) => {
                 },
                 mode: 'cors'
             });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
             const data = await response.json();
-            // console.log(`use case returned ${JSON.stringify(data)}`)
-            // const nodeData = await fetch(`http://127.0.0.1:5001/getNodes?useCaseId=${useCase.id}`,
-            //     {
-            //         method: 'GET',
-            //         mode: 'cors'
-            //     }
-            // )
-            // const edgeData = await fetch(`http://127.0.0.1:5001/getEdges?useCaseId=${useCase.id}`,
-            //     {
-            //         method: 'GET',
-            //         mode: 'cors'
-            //     }
-            // )
-            // const nodes = await nodeData.json();
-            // const edges = await edgeData.json();
+            const loadTime = Date.now() - startTime;
+            
             const nodes = data.nodes;
             const edges = data.edges;
-            console.log(`nodes ${nodes}`)
-            console.log(`edges ${edges}`)
+            
+            console.log(`✅ Graph loaded in ${loadTime}ms`);
+            console.log(`📊 Nodes: ${nodes?.length || 0}, Edges: ${edges?.length || 0}`);
+            console.log(`📁 Data size: ~${JSON.stringify(data).length} characters`);
+            
             sessionStorage.setItem('nodes', JSON.stringify(nodes));
             sessionStorage.setItem('edges', JSON.stringify(edges));
             onUseCaseSelection(useCase.name, nodes, edges, true)
         } catch (error) {
-            console.error('Error:', error);
+            const loadTime = Date.now() - startTime;
+            console.error(`❌ Error after ${loadTime}ms:`, error);
+            onUseCaseSelection(useCase.name, [], [], true); // Show empty state instead of infinite loading
         } finally {
             console.log("done");
         }
