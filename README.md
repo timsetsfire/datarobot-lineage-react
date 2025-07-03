@@ -73,3 +73,14 @@ npm run build
 ```
 
 If the error persists, check that `react-bootstrap` and `bootstrap` are listed in `client/package.json` dependencies.
+
+# DataRobot API Configuration
+DATAROBOT_ENDPOINT=https://your-datarobot-instance.com/api/v2
+DATAROBOT_API_TOKEN=your-api-token-here
+
+# Neo4j Configuration (for chat functionality) 
+NEO4J_URL=your-neo4j-url-here
+NEO4J_PASSWORD=your-neo4j-password-here
+
+# Server Configuration
+PORT=8080
