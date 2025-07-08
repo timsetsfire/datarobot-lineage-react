@@ -1,0 +1,148 @@
+{
+  "customModelVersionNode": {
+    "id": "custom-rag-model-123-v2",
+    "label": "customModelVersion",
+    "name": "RAG Customer Support Model",
+    "url": "https://datarobot.com/registry/custom-model-workshop/custom-rag-model-123/versions/v2",
+    "assetId": "custom-rag-model-123",
+    "assetVersionId": "v2",
+    "configFields": {
+      "VECTOR_DATABASE_ID": "685a379330a071064c234ccf",
+      "VECTOR_DATABASE_FAMILY_ID": "685a379330a071064c234ccf", 
+      "VECTOR_DATABASE_DEPLOYMENT_ID": "68654869aef6a280e986c487",
+      "LLM_BLUEPRINT_ID": "685a387330a071064c234cd2",
+      "LLM_BLUEPRINT_ID_COLUMN_NAME": "LLM_BLUEPRINT_ID",
+      "PLAYGROUND_ID": "685a081376ef6c455e506f86"
+    },
+    "parents": [
+      {
+        "id": "685a379330a071064c234ccf-vector-family-id",
+        "label": "vectorDatabases",
+        "name": "Customer FAQ Embeddings",
+        "edgeType": {
+          "type": "USES_VECTOR_DB",
+          "label": "USES_VECTOR_DB",
+          "color": "#9333EA"
+        }
+      },
+      {
+        "id": "68654869aef6a280e986c487",
+        "label": "deployments", 
+        "name": "Vector Search Deployment",
+        "edgeType": {
+          "type": "USES_DEPLOYMENT",
+          "label": "USES_DEPLOYMENT",
+          "color": "#FF6B35"
+        }
+      },
+      {
+        "id": "685a387330a071064c234cd2",
+        "label": "llmBlueprint",
+        "name": "Customer Support Assistant Blueprint",
+        "edgeType": {
+          "type": "USES_LLM_BLUEPRINT", 
+          "label": "USES_LLM_BLUEPRINT",
+          "color": "#B968F7"
+        }
+      },
+      {
+        "id": "685a081376ef6c455e506f86",
+        "label": "playgrounds",
+        "name": "RAG Experimentation Playground",
+        "edgeType": {
+          "type": "CONFIGURED_IN_PLAYGROUND", 
+          "label": "CONFIGURED_IN_PLAYGROUND",
+          "color": "#C084FC"
+        }
+      }
+    ],
+    "useCaseId": "uc-customer-support-123",
+    "useCaseName": "Customer Support Automation"
+  },
+  "generatedEdges": [
+    {
+      "from": "685a379330a071064c234ccf-vector-family-id",
+      "to": "custom-rag-model-123-v2",
+      "type": "USES_VECTOR_DB",
+      "label": "USES_VECTOR_DB",
+      "color": "#9333EA",
+      "width": 2,
+      "dashes": [3, 3]
+    },
+    {
+      "from": "68654869aef6a280e986c487",
+      "to": "custom-rag-model-123-v2", 
+      "type": "USES_DEPLOYMENT",
+      "label": "USES_DEPLOYMENT",
+      "color": "#FF6B35",
+      "width": 3,
+      "dashes": false
+    },
+    {
+      "from": "685a387330a071064c234cd2",
+      "to": "custom-rag-model-123-v2",
+      "type": "USES_LLM_BLUEPRINT",
+      "label": "USES_LLM_BLUEPRINT", 
+      "color": "#B968F7",
+      "width": 2,
+      "dashes": false
+    },
+    {
+      "from": "685a081376ef6c455e506f86",
+      "to": "custom-rag-model-123-v2",
+      "type": "CONFIGURED_IN_PLAYGROUND",
+      "label": "CONFIGURED_IN_PLAYGROUND", 
+      "color": "#C084FC",
+      "width": 1,
+      "dashes": false
+    }
+  ],
+  "lineageFlow": {
+    "description": "Customer Support RAG Model Lineage",
+    "flow": [
+      "Customer FAQ Dataset",
+      "↓ BUILT_FROM_DATASET", 
+      "Customer FAQ Embeddings (Vector DB)",
+      "↓ USES_VECTOR_DB",
+      "RAG Customer Support Model (Custom Model Version)",
+      "↓ REGISTERED_FROM",
+      "Production Support Model (Registered Model)",
+      "↓ DEPLOYS_REGISTERED_MODEL", 
+      "Support Chatbot Deployment",
+      "↓ USES_DEPLOYMENT",
+      "Customer Support Application"
+    ],
+    "keyInsights": [
+      "Model uses vector database for semantic search",
+      "Deployment provides vector search capabilities", 
+      "LLM blueprint configures language model behavior",
+      "Full RAG pipeline visibility from data to application"
+    ]
+  },
+  "configurationFieldsFound": {
+    "VECTOR_DATABASE_ID": {
+      "description": "ID of vector database used for retrieval",
+      "relationshipCreated": "vectorDatabases → customModelVersion (USES_VECTOR_DB)"
+    },
+    "VECTOR_DATABASE_DEPLOYMENT_ID": {
+      "description": "Deployment serving the vector database",
+      "relationshipCreated": "deployments → customModelVersion (USES_DEPLOYMENT)"
+    },
+    "LLM_BLUEPRINT_ID": {
+      "description": "Blueprint configuring the language model",
+      "relationshipCreated": "llmBlueprint → customModelVersion (USES_LLM_BLUEPRINT)"
+    },
+    "LLM_BLUEPRINT_ID_COLUMN_NAME": {
+      "description": "Column name for blueprint reference",
+      "relationshipCreated": "None (metadata field)"
+    },
+    "VECTOR_DATABASE_FAMILY_ID": {
+      "description": "Family ID for vector database versioning",
+      "relationshipCreated": "None (used internally for vector DB node lookup)"
+    },
+    "PLAYGROUND_ID": {
+      "description": "ID of the RAG experimentation playground",
+      "relationshipCreated": "playgrounds → customModelVersion (CONFIGURED_IN_PLAYGROUND)"
+    }
+  }
+} 

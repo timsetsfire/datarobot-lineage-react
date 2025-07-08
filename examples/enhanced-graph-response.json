@@ -1,0 +1,210 @@
+{
+  "nodes": [
+    {
+      "id": "app-customer-churn-predictor",
+      "label": "applications",
+      "name": "Customer Churn Predictor App",
+      "url": "https://datarobot.com/useCases/uc-123/overview/apps/no-code-applications",
+      "assetId": "app-customer-churn-predictor",
+      "applicationTypes": ["deployment", "dataset"],
+      "deploymentIds": ["deploy-churn-model-v2"],
+      "relatedEntities": {
+        "modelId": "model-churn-rf-789",
+        "projectId": "proj-churn-analysis-456"
+      },
+      "referencedDatasets": [
+        {
+          "datasetId": "dataset-customer-data-123",
+          "versionId": "v3"
+        }
+      ],
+      "parents": ["deploy-churn-model-v2", "model-churn-rf-789", "proj-churn-analysis-456", "dataset-customer-data-123-v3"]
+    },
+    {
+      "id": "deploy-churn-model-v2",
+      "label": "deployments",
+      "name": "Churn Model v2 Deployment",
+      "url": "https://datarobot.com/deployments/deploy-churn-model-v2",
+      "assetId": "deploy-churn-model-v2",
+      "parents": ["model-churn-rf-789"]
+    },
+    {
+      "id": "model-churn-rf-789",
+      "label": "models",
+      "name": "Random Forest Classifier #15",
+      "url": "https://datarobot.com/projects/proj-churn-analysis-456/models/model-churn-rf-789",
+      "assetId": "model-churn-rf-789",
+      "parents": ["proj-churn-analysis-456"]
+    },
+    {
+      "id": "proj-churn-analysis-456",
+      "label": "projects",
+      "name": "Customer Churn Analysis 2024",
+      "url": "https://datarobot.com/projects/proj-churn-analysis-456",
+      "assetId": "proj-churn-analysis-456",
+      "parents": ["dataset-customer-data-123-v3"]
+    },
+    {
+      "id": "dataset-customer-data-123-v3",
+      "label": "datasets",
+      "name": "Customer Data March 2024",
+      "url": "https://datarobot.com/registry/data/dataset-customer-data-123",
+      "assetId": "dataset-customer-data-123",
+      "assetVersionId": "v3",
+      "parents": ["datasource-crm-system"]
+    },
+    {
+      "id": "datasource-crm-system",
+      "label": "datasource",
+      "name": "CRM System - Customer Table",
+      "url": "https://datarobot.com/account/data-connections",
+      "assetId": "datasource-crm-system",
+      "parents": ["datastore-production-db"]
+    },
+    {
+      "id": "datastore-production-db",
+      "label": "datastore",
+      "name": "Production PostgreSQL Database",
+      "url": "https://datarobot.com/account/data-connections",
+      "assetId": "datastore-production-db",
+      "parents": []
+    }
+  ],
+  "edges": [
+    {
+      "from": "deploy-churn-model-v2",
+      "to": "app-customer-churn-predictor",
+      "type": "USES_DEPLOYMENT",
+      "label": "USES_DEPLOYMENT",
+      "color": "#FF6B35",
+      "width": 3,
+      "dashes": false
+    },
+    {
+      "from": "model-churn-rf-789", 
+      "to": "app-customer-churn-predictor",
+      "type": "USES_MODEL",
+      "label": "USES_MODEL",
+      "color": "#FF8C42",
+      "width": 3,
+      "dashes": false
+    },
+    {
+      "from": "proj-churn-analysis-456",
+      "to": "app-customer-churn-predictor", 
+      "type": "BUILT_FROM_PROJECT",
+      "label": "BUILT_FROM_PROJECT",
+      "color": "#FFA500",
+      "width": 2,
+      "dashes": false
+    },
+    {
+      "from": "dataset-customer-data-123-v3",
+      "to": "app-customer-churn-predictor",
+      "type": "REFERENCES_DATASET", 
+      "label": "REFERENCES_DATASET",
+      "color": "#FFB84D",
+      "width": 2,
+      "dashes": [5, 5]
+    },
+    {
+      "from": "model-churn-rf-789",
+      "to": "deploy-churn-model-v2",
+      "type": "DEPLOYS_MODEL",
+      "label": "DEPLOYS_MODEL", 
+      "color": "#2E5B89",
+      "width": 2,
+      "dashes": false
+    },
+    {
+      "from": "proj-churn-analysis-456",
+      "to": "model-churn-rf-789",
+      "type": "BELONGS_TO_PROJECT",
+      "label": "BELONGS_TO_PROJECT",
+      "color": "#357ABD", 
+      "width": 2,
+      "dashes": false
+    },
+    {
+      "from": "dataset-customer-data-123-v3",
+      "to": "proj-churn-analysis-456",
+      "type": "TRAINED_ON",
+      "label": "TRAINED_ON",
+      "color": "#4A90E2",
+      "width": 2,
+      "dashes": false
+    },
+    {
+      "from": "datasource-crm-system",
+      "to": "dataset-customer-data-123-v3",
+      "type": "SOURCED_FROM",
+      "label": "SOURCED_FROM",
+      "color": "#10B981",
+      "width": 1,
+      "dashes": false
+    },
+    {
+      "from": "datastore-production-db",
+      "to": "datasource-crm-system", 
+      "type": "CONNECTS_TO",
+      "label": "CONNECTS_TO",
+      "color": "#059669",
+      "width": 1,
+      "dashes": false
+    }
+  ],
+  "metadata": {
+    "totalNodes": 7,
+    "totalEdges": 9,
+    "edgeTypes": {
+      "USES_DEPLOYMENT": {
+        "count": 1,
+        "description": "Application uses a specific model deployment",
+        "category": "Application Relationships"
+      },
+      "USES_MODEL": {
+        "count": 1, 
+        "description": "Application directly references a trained model",
+        "category": "Application Relationships"
+      },
+      "BUILT_FROM_PROJECT": {
+        "count": 1,
+        "description": "Application was built from an ML project",
+        "category": "Application Relationships"
+      },
+      "REFERENCES_DATASET": {
+        "count": 1,
+        "description": "Application references specific datasets",
+        "category": "Application Relationships"
+      },
+      "DEPLOYS_MODEL": {
+        "count": 1,
+        "description": "Deployment serves a specific model",
+        "category": "ML Pipeline"
+      },
+      "BELONGS_TO_PROJECT": {
+        "count": 1,
+        "description": "Model belongs to an ML project",
+        "category": "ML Pipeline"
+      },
+      "TRAINED_ON": {
+        "count": 1,
+        "description": "Model was trained on specific dataset",
+        "category": "ML Pipeline"
+      },
+      "SOURCED_FROM": {
+        "count": 1,
+        "description": "Dataset was sourced from external data",
+        "category": "Data Flow"
+      },
+      "CONNECTS_TO": {
+        "count": 1,
+        "description": "Datasource connects to datastore",
+        "category": "Data Flow"
+      }
+    },
+    "lineageDepth": 4,
+    "applicationLineageComplete": true,
+    "generatedAt": "2024-12-28T10:30:00Z"
+  }
+} 

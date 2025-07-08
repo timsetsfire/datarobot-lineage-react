@@ -287,12 +287,24 @@ export function getUseCaseAssetsUrls(useCaseAssets) {
 
 //
 export async function getUseCases(token, endpoint) {
+    // Debug token format
+    console.log(`🔍 DEBUG: Token length: ${token?.length || 'undefined'}`);
+    console.log(`🔍 DEBUG: Token preview: "${token?.substring(0, 20)}..."`);
+    console.log(`🔍 DEBUG: Token starts with 'Bearer'?: ${token?.startsWith('Bearer ')}`);
+    
+    // Clean up token - remove any existing "Bearer " prefix and trim whitespace
+    const cleanToken = token?.replace(/^Bearer\s+/i, '').trim();
+    const authHeader = `Bearer ${cleanToken}`;
+    
+    console.log(`🔍 DEBUG: Clean token preview: "${cleanToken?.substring(0, 20)}..."`);
+    console.log(`🔍 DEBUG: Final auth header: "${authHeader.substring(0, 30)}..."`);
+
     const axiosClient = axios.create({
         baseURL: endpoint, // Base URL for your API
         timeout: 30000, // Increased timeout for better reliability
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`, // If you need authentication
+          'Authorization': authHeader,
         },
       });
 
