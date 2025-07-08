@@ -44,14 +44,83 @@ Uses React and a Node.js backend with enhanced authentication and comprehensive 
 - Node.js - Server runtime
 - Neo4j - Graph database for data lineage
 
-## Usage 
+## 🚀 **Getting Started**
+
+### **Prerequisites**
+- **Node.js** (v16 or higher) - [Download here](https://nodejs.org/)
+- **npm** (comes with Node.js)
+- **DataRobot API Token** - Get from your DataRobot instance
+- **Optional**: Neo4j instance (for chat functionality)
+
+### **Quick Start (Development)**
+
+The easiest way to get started is using the provided startup scripts:
 
 ```bash
+# Clone the repository
+git clone <repository-url>
+cd datarobot-lineage-react
+
+# Make startup scripts executable
+chmod +x start-dev.sh start-prod.sh
+
+# Start development server (recommended for development)
+./start-dev.sh
+```
+
+This will:
+- ✅ Install all dependencies automatically
+- ✅ Create a `.env` template if missing
+- ✅ Start backend server on port 8080
+- ✅ Start frontend dev server on port 5173
+- ✅ Open the application in your browser
+
+### **Manual Setup (Alternative)**
+
+If you prefer manual setup:
+
+```bash
+# Install backend dependencies
 npm install
-cd ./client && npm install && npm run build
-cd ..
+
+# Install frontend dependencies
+cd client && npm install && cd ..
+
+# Build frontend for production
+cd client && npm run build && cd ..
+
+# Start the application
 npm start
 ```
+
+### **Production Deployment**
+
+For production deployment:
+
+```bash
+# Use the production startup script
+./start-prod.sh
+```
+
+This will:
+- ✅ Build the frontend for production
+- ✅ Start the production server on port 8080
+- ✅ Serve the application from `client/dist/`
+
+### **Available Scripts**
+
+| Script | Description | Port |
+|--------|-------------|------|
+| `./start-dev.sh` | Development mode with hot reload | Backend: 8080, Frontend: 5173 |
+| `./start-prod.sh` | Production mode with built frontend | Backend: 8080 |
+| `npm start` | Start backend server only | 8080 |
+| `npm run start:dev` | Start backend with nodemon (auto-restart) | 8080 |
+
+### **Access URLs**
+
+- **Development**: http://localhost:5173 (frontend) + http://localhost:8080 (backend)
+- **Production**: http://localhost:8080 (serves both frontend and backend)
+- **API Health Check**: http://localhost:8080/auth/check
 
 ## 🔧 **Configuration**
 
@@ -71,6 +140,25 @@ NEO4J_PASSWORD=your-neo4j-password-here
 ```bash
 PORT=8080
 ```
+
+### **Environment Setup**
+
+The startup scripts will automatically create a `.env` template if one doesn't exist. You'll need to update it with your credentials:
+
+```bash
+# DataRobot API Configuration
+DATAROBOT_ENDPOINT=https://your-datarobot-instance.com/api/v2
+DATAROBOT_API_TOKEN=your-api-token-here
+
+# Server Configuration
+PORT=8080
+
+# Neo4j Configuration (optional - only needed for chat functionality)
+NEO4J_URL=your-neo4j-url-here
+NEO4J_PASSWORD=your-neo4j-password-here
+```
+
+**⚠️ Important**: Replace `your-api-token-here` with your actual DataRobot API token.
 
 ## 🗄️ **Database Setup**
 
@@ -149,6 +237,43 @@ The app now includes enhanced debug logging for authentication. Check the browse
 - Ensure your DataRobot API token has the necessary permissions
 - Check that the DataRobot endpoint is accessible
 - Verify the token format (the app now handles Bearer prefix automatically)
+
+### Startup Issues
+
+**"Permission denied" when running startup scripts**
+```bash
+chmod +x start-dev.sh start-prod.sh
+```
+
+**"Port already in use" errors**
+The startup scripts will automatically kill processes on the required ports, but if you encounter issues:
+```bash
+# Kill processes on port 8080
+lsof -ti:8080 | xargs kill -9
+
+# Kill processes on port 5173 (development)
+lsof -ti:5173 | xargs kill -9
+```
+
+**"Node.js is not installed"**
+Download and install Node.js from [nodejs.org](https://nodejs.org/)
+
+**"npm install" fails**
+Try clearing npm cache and reinstalling:
+```bash
+npm cache clean --force
+rm -rf node_modules package-lock.json
+npm install
+```
+
+**Frontend build fails**
+Check that all client dependencies are installed:
+```bash
+cd client
+rm -rf node_modules package-lock.json
+npm install
+npm run build
+```
 
 ## 📊 **Example Use Cases**
 
