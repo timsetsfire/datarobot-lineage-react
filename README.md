@@ -143,7 +143,30 @@ PORT=8080
 
 ### **Environment Setup**
 
-The startup scripts will automatically create a `.env` template if one doesn't exist. You'll need to update it with your credentials:
+You have two options for setting up your environment:
+
+#### **Option 1: Use the startup scripts (Recommended)**
+The startup scripts will automatically create a `.env` file if one doesn't exist:
+
+```bash
+./start-dev.sh
+```
+
+This will create a `.env` file with the basic template and prompt you to update it.
+
+#### **Option 2: Manual setup**
+Copy the template and configure it manually:
+
+```bash
+# Copy the template
+cp .env.template .env
+
+# Edit the file with your credentials
+nano .env  # or use your preferred editor
+```
+
+#### **Required Configuration**
+Update your `.env` file with your actual credentials:
 
 ```bash
 # DataRobot API Configuration
@@ -158,7 +181,10 @@ NEO4J_URL=your-neo4j-url-here
 NEO4J_PASSWORD=your-neo4j-password-here
 ```
 
-**⚠️ Important**: Replace `your-api-token-here` with your actual DataRobot API token.
+**⚠️ Important**: 
+- Replace `your-api-token-here` with your actual DataRobot API token
+- Get your API token from DataRobot: Settings > API Access > Generate API Token
+- The `.env` file is automatically ignored by git for security
 
 ## 🗄️ **Database Setup**
 
