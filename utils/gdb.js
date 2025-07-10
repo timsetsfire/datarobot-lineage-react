@@ -115,7 +115,7 @@ export async function populateNeo4jGraph(graph) {
     const neo4jGraph = await getOrCreateNeo4jGraph();
     await clearNeo4jGraph(neo4jGraph)
     const createNodeStmts = prepareDataForNeo4j(nodeData).map(stmt => `CREATE ${stmt}`)
-    const edgeCreationStmts = edgeData.map(edge => `match (n {id: "${edge.from}"}), (m {id: "${edge.to}"}) create (n)-[r:IS_PARENT_OF {id: "${edge.from}-${edge.to}"}]->(m)`)
+    const edgeCreationStmts = edgeData.map(edge => `match (n {id: "${edge.from}"}), (m {id: "${edge.to}"}) create (n)-[r:${edge.type} {id: "${edge.from}-${edge.to}"}]->(m)`)
     await Promise.all(createNodeStmts.map(async (stmt) => {
         try {
             await neo4jGraph.query(stmt)
