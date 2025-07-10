@@ -6,6 +6,9 @@ import { Neo4jGraph } from "@langchain/community/graphs/neo4j_graph";
 import { GraphCypherQAChain } from "@langchain/community/chains/graph_qa/cypher"
 import { ToolNode } from '@langchain/langgraph/prebuilt';
 import { StateGraph, MessagesAnnotation, END, START, MemorySaver } from "@langchain/langgraph";
+import {Client} from '@modelcontextprotocol/sdk/client/index.js';
+import {SSEClientTransport} from '@modelcontextprotocol/sdk/client/sse.js';
+import {loadMcpTools} from '@langchain/mcp-adapters';
 import dotenv from "dotenv";
 import { getOrCreateNeo4jGraph } from "./gdb.js";
 
@@ -27,12 +30,21 @@ const AZURE_OPENAI_DEPLOYMENT_NAME = "gpt-4o"
 const NEO4J_URL = process.env.NEO4J_URL;
 const NEO4J_USERNAME = process.env.NEO4J_USERNAME;
 const NEO4J_PASSWORD = process.env.NEO4J_PASSWORD;
+const MCP_PORT = process.env.MCP_PORT || 8000;
 
 let agent = null;
 
 export async function getOrCreateGraphChatAgent() {
 
     if (!agent) {
+
+        // initialize mcp client 
+
+        const sseClient = new Client({name: 'dr tools', version: '0.1.0'});
+        const url = new URL(`http://0.0.0.0:${MCP_PORT}/sse`)
+        const transport = new SSEClientTransport(url );
+        await sseClient.connect(transport);
+        const mcpTools = await loadMcpTools('dr tools', sseClient)
 
         const llm = new AzureChatOpenAI({
             model: "gpt-4o",
@@ -41,16 +53,7 @@ export async function getOrCreateGraphChatAgent() {
             azureOpenAIApiVersion: AZURE_OPENAI_API_VERSION,
             azureOpenAIApiInstanceName: AZURE_OPENAI_API_INSTANCE_NAME,
             azureOpenAIApiDeploymentName: AZURE_OPENAI_DEPLOYMENT_NAME,
-            // azureOpenAIBasePath: "https://datarobot-genai-enablement.openai.azure.com/"
         })
-
-        // const graph = await Neo4jGraph.initialize({
-        //     url: NEO4J_URL,
-        //     username: NEO4J_USERNAME,
-        //     password: NEO4J_PASSWORD,
-        //     database: "neo4j",
-        // })
-
 
         const graph = await getOrCreateNeo4jGraph()
 
@@ -69,7 +72,7 @@ export async function getOrCreateGraphChatAgent() {
             }
         }, {
             name: 'query_graph_database',
-            description: 'this tool queries the graph database and should be used when asked questions about relationships between item',
+            description: 'this tool queries the graph database and should be used when asked questions about relationships between item.  You might also use this to grab necessary ids such as model ids, project ids, deployment ids, etc',
             schema: z.object({
                 query: z.string().describe("The user query that should be passed to the graph chain"),
             })
@@ -90,7 +93,7 @@ export async function getOrCreateGraphChatAgent() {
                 })
             })
 
-        const tools = [queryGraph, interpretResults]
+        const tools = [queryGraph, interpretResults, ...mcpTools]
 
         const llmWithTools = new AzureChatOpenAI({
             model: "gpt-4o",
@@ -121,7 +124,6 @@ export async function getOrCreateGraphChatAgent() {
         const workflow = new StateGraph(MessagesAnnotation).addNode("agent", callModel).addNode("tools", toolNodeForGraph).addEdge(START, "agent").addConditionalEdges("agent", shouldContinue, ["tools", END]).addEdge("tools", "agent")
         const checkpointer = new MemorySaver();
         agent = workflow.compile({checkpointer})
-        // agent = workflow.compile()
     }
     return agent
 }

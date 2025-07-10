@@ -13,11 +13,15 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # Configuration
+MCP_PORT=8000
 BACKEND_PORT=8080
 FRONTEND_PORT=5173
 LOG_DIR="./logs"
 BACKEND_LOG="$LOG_DIR/backend.log"
 FRONTEND_LOG="$LOG_DIR/frontend.log"
+MCP_LOG="$LOG_DIR/mcp.log"
+
+ENV_DIR=".venv"
 
 # Function to print colored output
 print_status() {
@@ -76,10 +80,18 @@ cleanup() {
         kill $FRONTEND_PID 2>/dev/null
         print_status "Frontend server stopped"
     fi
+
+    # Kill mcp server
+    if [ ! -z "$MCP_PID" ]; then
+        kill $MCP_PID 2>/dev/null
+        print_status "MCP server stopped"
+    fi
+    
     
     # Kill any remaining processes on our ports
     kill_port $BACKEND_PORT
     kill_port $FRONTEND_PORT
+    kill_port $MCP_PORT
     
     print_success "Cleanup complete. Goodbye! 👋"
     exit 0
@@ -91,7 +103,7 @@ trap cleanup SIGINT SIGTERM EXIT
 # Print banner
 echo -e "${PURPLE}"
 echo "╔══════════════════════════════════════════════════════════════╗"
-echo "║                DataRobot Lineage React App                  ║"
+echo "║                DataRobot Lineage React App                   ║"
 echo "║                    Development Server                        ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
 echo -e "${NC}"
@@ -150,6 +162,11 @@ if check_port $FRONTEND_PORT; then
     kill_port $FRONTEND_PORT
 fi
 
+if check_port $MCP_PORT; then
+    print_warning "Port $MCP_PORT is already in use"
+    kill_port $MCP_PORT
+fi
+
 # Install dependencies if needed
 print_status "Checking dependencies..."
 
@@ -164,6 +181,44 @@ if [ ! -d "client/node_modules" ]; then
 fi
 
 print_success "Dependencies ready"
+
+
+# create python virtual environment for mcp server 
+# Check if virtual environment already exists
+if [ -d "$ENV_DIR" ]; then
+    print_status "Virtual environment '${ENV_DIR}' already exists."
+    print_status "Activating virtual environment..."
+    # shellcheck source=/dev/null
+    source "${ENV_DIR}/bin/activate"
+else
+    print_status "Creating virtual environment in ./${ENV_DIR}"
+    python3 -m venv "$ENV_DIR"
+    # Activate the virtual environment
+    print_status "Activating virtual environment..."
+    # shellcheck source=/dev/null
+    source "${ENV_DIR}/bin/activate"
+    # Install requirements
+    print_status "Installing requirements from requirements.txt..."
+    pip install --upgrade pip
+    pip install -r ./mcp_server/requirements.txt
+    print_success "Environment setup complete."
+fi
+
+
+
+# Start MCP Server
+print_status "Starting MCP Server on port $MCP_PORT..."
+cd ./mcp_server && uvicorn main:app --port $MCP_PORT > "../$MCP_LOG" 2>&1 &
+MCP_PID=$!
+
+# Wait a moment and check if mcp server started successfully
+sleep 3
+if ! kill -0 $MCP_PID 2>/dev/null; then
+    print_error "MCP server failed to start. Check $MCP_LOG for details:"
+    tail -10 "$MCP_LOG"
+    exit 1
+fi
+print_success "MCP server started (PID: $MCP_PID)"
 
 # Start backend server
 print_status "Starting backend server on port $BACKEND_PORT..."

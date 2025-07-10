@@ -301,7 +301,7 @@ export async function getUseCases(token, endpoint) {
 
     const axiosClient = axios.create({
         baseURL: endpoint, // Base URL for your API
-        timeout: 30000, // Increased timeout for better reliability
+        // timeout: 30000, // Increased timeout for better reliability
         headers: {
           'Content-Type': 'application/json',
           'Authorization': authHeader,

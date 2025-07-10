@@ -14,6 +14,8 @@ NC='\033[0m' # No Color
 
 # Configuration
 BACKEND_PORT=8080
+MCP_PORT=8000
+ENV_DIR=".venv"
 
 # Function to print colored output
 print_status() {
@@ -66,9 +68,16 @@ cleanup() {
         kill $SERVER_PID 2>/dev/null
         print_status "Server stopped"
     fi
+
+    # Kill MCP Server
+    if [ ! -z "$MCP_PID" ]; then
+        kill $MCP_PID 2>/dev/null
+        print_status "MCP Server stopped"
+    fi
     
     # Kill any remaining processes on our port
     kill_port $BACKEND_PORT
+    kill_port $MCP_PORT
     
     print_success "Cleanup complete. Goodbye! 👋"
     exit 0
@@ -132,6 +141,13 @@ if check_port $BACKEND_PORT; then
     kill_port $BACKEND_PORT
 fi
 
+# Check and kill existing processes on MCP port
+print_status "Checking MCP port $MCP_PORT..."
+if check_port $MCP_PORT; then
+    print_warning "Port $MCP_PORT is already in use"
+    kill_port $MCP_PORT
+fi
+
 # Install dependencies if needed
 print_status "Installing dependencies..."
 
@@ -145,7 +161,29 @@ if [ ! -d "client/node_modules" ]; then
     cd client && npm install && cd ..
 fi
 
+# create python virtual environment for mcp server 
+# Check if virtual environment already exists
+if [ -d "$ENV_DIR" ]; then
+    print_status "Virtual environment '${ENV_DIR}' already exists."
+    print_status "Activating virtual environment..."
+    # shellcheck source=/dev/null
+    source "${ENV_DIR}/bin/activate"
+else
+    print_status "Creating virtual environment in ./${ENV_DIR}"
+    python3 -m venv "$ENV_DIR"
+    # Activate the virtual environment
+    print_status "Activating virtual environment..."
+    # shellcheck source=/dev/null
+    source "${ENV_DIR}/bin/activate"
+    # Install requirements
+    print_status "Installing requirements from requirements.txt..."
+    pip install --upgrade pip
+    pip install -r ./mcp_server/requirements.txt
+    print_success "Environment setup complete."
+fi
+
 print_success "Dependencies ready"
+
 
 # Build frontend
 print_status "Building frontend for production..."
@@ -156,6 +194,7 @@ if [ -d "dist" ]; then
     rm -rf dist
     print_status "Cleaned previous build"
 fi
+
 
 # Run the build
 if npm run build; then
@@ -173,6 +212,20 @@ if [ ! -d "client/dist" ]; then
     print_error "Build directory client/dist not found!"
     exit 1
 fi
+
+# Start MCP Server
+print_status "Starting MCP Server on port $MCP_PORT..."
+cd ./mcp_server && uvicorn main:app --port $MCP_PORT &
+MCP_PID=$!
+
+# Wait a moment and check if mcp server started successfully
+sleep 3
+if ! kill -0 $MCP_PID 2>/dev/null; then
+    print_error "MCP Server failed to start!"
+    exit 1
+fi
+print_success "MCP server started (PID: $MCP_PID)"
+
 
 # Start the production server
 print_status "Starting production server on port $BACKEND_PORT..."

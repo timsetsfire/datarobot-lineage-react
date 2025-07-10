@@ -30,17 +30,18 @@ chmod +x start-dev.sh start-prod.sh
 The script will:
 - ✅ Install dependencies automatically
 - ✅ Create `.env` template
+- ✅ Create python environment to run MCP Server
 - ✅ Start development servers
 - ✅ Open the app in your browser
 
-**Access**: http://localhost:5173 (frontend) + http://localhost:8080 (backend)
+**Access**: http://localhost:5173 (frontend) + http://localhost:8080 (backend) + http://localhost:8000 (MCP)
 
 ## 📋 **Available Scripts**
 
 | Script | Purpose | Ports |
 |--------|---------|-------|
-| `./start-dev.sh` | **Development** (hot reload) | Frontend: 5173, Backend: 8080 |
-| `./start-prod.sh` | **Production** (built frontend) | Backend: 8080 |
+| `./start-dev.sh` | **Development** (hot reload) | Frontend: 5173, Backend: 8080, MCP: 8000|
+| `./start-prod.sh` | **Production** (built frontend) | Backend: 8080, MCP: 8000 |
 | `npm start` | Backend only | 8080 |
 | `npm run start:dev` | Backend with auto-restart | 8080 |
 
@@ -171,6 +172,7 @@ cd client && rm -rf node_modules package-lock.json && npm install
 
 **Frontend**: React 19.0.0 + Vite + vis-network + React Bootstrap
 **Backend**: Node.js + Express + Neo4j Driver
+**MCP**: Python 3.11.8 + MCP
 **Authentication**: Enhanced Bearer token handling with debug logging
 
 ---

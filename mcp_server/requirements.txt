@@ -1,0 +1,7 @@
+starlette==0.47.1
+mcp==1.10.1
+RapidFuzz == 3.13.0
+datarobot == 3.7.1
+datarobot-predict == 1.13.2
+python-dotenv
+markdown
