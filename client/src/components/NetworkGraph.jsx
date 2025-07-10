@@ -310,13 +310,14 @@ const NetworkGraph = ({ onNodeSelect, nodes, edges, selectedEntity, searchTerm, 
         }
 
         // Track zoom changes for dynamic edge label sizing
-        if (network && typeof network.on === 'function') {
-            network.on('zoom', (event) => {
-                if (event && typeof event.scale === 'number') {
-                    setCurrentZoom(event.scale);
-                }
-            });
-        }
+        // disabling for now as it is messing up zoom capability
+        // if (network && typeof network.on === 'function') {
+        //     network.on('zoom', (event) => {
+        //         if (event && typeof event.scale === 'number') {
+        //             setCurrentZoom(event.scale);
+        //         }
+        //     });
+        // }
 
         if (network && typeof network.on === 'function') {
             network.on('selectNode', (event) => {
