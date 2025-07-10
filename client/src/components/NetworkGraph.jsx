@@ -327,20 +327,20 @@ const NetworkGraph = ({ onNodeSelect, nodes, edges, selectedEntity, searchTerm, 
                 }
             });
 
-            network.on('doubleClick', function (event) {
-                if (event && event.nodes && event.nodes[0]) {
-                    const nodeId = event.nodes[0];
-                    const node = nodes.find(n => n.id === nodeId);
-                    
-                    // Open DataRobot URL if available
-                    if (node && node.url) {
-                        console.log(`🔗 Opening DataRobot URL for ${node.label}: ${node.name || node.id}`);
-                        window.open(node.url, '_blank');
-                    } else {
-                        console.log(`ℹ️  No URL available for node: ${nodeId}`);
-                    }
+        network.on('doubleClick', function (event) {
+            const { nodes: selectedNodes } = event;
+            const nodeId = selectedNodes[0]
+            edges.forEach( (edge) => {
+                if (nodeId === edge.to) {
+                    visibleNodes.push(edge.from)
+                } else if (nodeId === edge.from) {
+                    visibleNodes.push(edge.to)
+                } else {
+                    {}
                 }
-            });
+            })
+            nodesView.refresh()
+        });
 
             // Custom tooltip handling
             network.on('hoverNode', (event) => {
