@@ -198,11 +198,12 @@ else
     # shellcheck source=/dev/null
     source "${ENV_DIR}/bin/activate"
     # Install requirements
-    print_status "Installing requirements from requirements.txt..."
-    pip install --upgrade pip
-    pip install -r ./mcp_server/requirements.txt
-    print_success "Environment setup complete."
 fi
+
+print_status "Installing requirements from requirements.txt..."
+pip install --upgrade pip
+pip install -r ./mcp_server/requirements.txt
+print_success "Environment setup complete."
 
 
 
