@@ -6,6 +6,8 @@ const os = require("os");
 const utils = require("./utils/utils.js");
 const chat = require("./utils/chat.js");
 const gdb = require("./utils/gdb.js");
+const prompts = require("./utils/prompts.js")
+const fs = require("fs");
 require('dotenv').config();
 
 // Function to get all available IP addresses
@@ -243,9 +245,10 @@ app.post("/chat", async (req, res) => {
       const graphChatAgent = await chat.getOrCreateGraphChatAgent()
       const stream = await graphChatAgent.stream(
         {
-          messages: [{ role: "user", content: data.query }],
+          messages: [{role: "system", content: prompts.SYSTEM_PROMPT},
+                    { role: "user", content: data.query }],
         },
-        {
+        { 
           streamMode: "values",
           configurable: { thread_id: data.threadId }
   
@@ -370,6 +373,19 @@ app.get("/getUseCaseGraph", async (req, res) => {
     }
   }
 });
+
+app.get("/plotly", async (req, res) => {
+  const plotlyPath = req.query.plotlyPath;
+  console.log(`plotly path = ${plotlyPath}`)
+  try {
+    const data = fs.readFileSync( plotlyPath, "utf-8")
+    const jsonData = JSON.parse(data)
+    console.log(jsonData)
+    res.status(200).json(jsonData)
+  } catch(error) {
+    res.status(400).json({error: error})
+  }
+})
 
 // Clear cache endpoint
 app.delete("/cache", async (req, res) => {

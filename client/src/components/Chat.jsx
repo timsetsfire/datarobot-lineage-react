@@ -4,6 +4,8 @@ import ReactMarkdown from 'react-markdown'; // Import react-markdown
 import RingLoader from 'react-spinners/RingLoader';
 const baseURL = "http://localhost:8080";
 import { v4 as uuid4 } from 'uuid';
+import RenderPlotlyFigure from './RenderPlotyFigure';
+
 
 const Chat = () => {
     const [messages, setMessages] = useState([]);
@@ -54,11 +56,31 @@ const Chat = () => {
             <div className="chat-window">
                 {messages.map((message, index) => (
                     <div key={index} className={`message ${message.sender}`}>
-                        {message.sender === 'ai' ? (
-                            <ReactMarkdown>{message.text}</ReactMarkdown> // Render the markdown
-                        ) : (
-                            <p>{message.text}</p>
-                        )}
+                    {message.sender === 'ai' ? (() => {
+                    let parsed;
+                    try {
+                        parsed = JSON.parse(message.text);
+                    } catch {
+                        parsed = null;
+                    }
+
+                    if (parsed && parsed.type) {
+                        switch (parsed.type) {
+                        case 'plotly':
+                            return <RenderPlotlyFigure jsonUrl={parsed.data.url} />;
+                        case 'text':
+                            return <ReactMarkdown>{parsed.data.content}</ReactMarkdown>;
+                        // add other types if needed
+                        default:
+                            return <ReactMarkdown>{message.text}</ReactMarkdown>;
+                        }
+                    }
+
+                    // fallback: just render markdown if no JSON or no type
+                    return <ReactMarkdown>{message.text}</ReactMarkdown>;
+                    })() : (
+                    <p>{message.text}</p>
+                    )}
                     </div>
                 ))}
                 {loading && <div className="message ai"><RingLoader/></div>}
