@@ -12,7 +12,7 @@ import os
 import json
 from io import StringIO
 
-
+from plotly.utils import PlotlyJSONEncoder
 import os
 import yaml
 import logging
@@ -130,7 +130,7 @@ def generate_plotly(prompt: str, path: str) -> dict:
             api_key=os.environ["DATAROBOT_API_TOKEN"],
         )
 
-        df = pd.read_csv(path) 
+        df = pd.read_csv("." + path) 
         buffer = StringIO()
         df.info(buf=buffer)
         info_str = buffer.getvalue()
@@ -149,7 +149,7 @@ def generate_plotly(prompt: str, path: str) -> dict:
         func = local_namespace.get("create_charts")
         plotly_json =  func(df).to_plotly_json()
         with open("../.cache/plotly_chart.json", "w") as f:
-            json.dump(plotly_json, f)
+            json.dump(plotly_json, f, cls=PlotlyJSONEncoder)
         return {
             "type": "plotly",
             "code": parsed_python_code,
@@ -198,7 +198,7 @@ def deployment_health_check(deployment_id: str) -> dict:
 #         return dict (error = str(e), message = "deployment name not found?  are you sure you performed a deployment look up?")
 
 @mcp.tool()
-def retrieve_model_feature_impact(model_id: str, project_id: str) -> str:
+def retrieve_model_feature_impact(model_id: str, project_id: str) -> dict:
     """retrieve the feature impact for a given datarobot model.  The feature impact tells you what features are most impactiful for accurate predictions.  A csv of feature impact is returned with first column is the feature name and second is the feature impact.  The csv is sorted in descending order based on feature ipact
     
     Args:
