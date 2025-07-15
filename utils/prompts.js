@@ -6,11 +6,10 @@ Only respond with JSON in the following format:
 
 {
   "type": "plotly",
-  "data": {
-    "url": "/static/plots/plot_123.json",
-    "title": "Sales over Time"
-  }
+  "path": "/example/plotly-path/plot_123.json"
 }
+
+The return of the tool should help you decide on how to respond. 
 
 ⚠️ Do NOT:
 - Wrap the JSON in backticks or quotes

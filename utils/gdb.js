@@ -5,6 +5,8 @@ import { clearLine } from "readline";
 
 dotenv.config();
 
+const GRAPHDB = process.env.GRAPHDB
+
 let neo4jGraph = null;
 
 Object.flatten = function (data) {
@@ -30,6 +32,7 @@ Object.flatten = function (data) {
     recurse(data, "");
     return result;
 }
+
 Object.unflatten = function (data) {
     "use strict";
     if (Object(data) !== data || Array.isArray(data))

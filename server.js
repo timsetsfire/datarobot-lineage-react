@@ -376,9 +376,10 @@ app.get("/getUseCaseGraph", async (req, res) => {
 
 app.get("/plotly", async (req, res) => {
   const plotlyPath = req.query.plotlyPath;
-  console.log(`plotly path = ${plotlyPath}`)
+  console.log(`plotly path = ${path.join(__dirname, plotlyPath)}`)
+  
   try {
-    const data = fs.readFileSync( plotlyPath, "utf-8")
+    const data = fs.readFileSync( path.join(__dirname, plotlyPath), "utf-8")
     const jsonData = JSON.parse(data)
     console.log(jsonData)
     res.status(200).json(jsonData)

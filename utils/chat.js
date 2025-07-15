@@ -46,37 +46,37 @@ export async function getOrCreateGraphChatAgent() {
         await sseClient.connect(transport);
         const mcpTools = await loadMcpTools('dr tools', sseClient)
 
-        const llm = new AzureChatOpenAI({
-            model: "gpt-4o",
-            azureOpenAIEndpoint: AZURE_OPENAI_ENDPOINT,
-            azureOpenAIApiKey: AZURE_OPENAI_API_KEY,
-            azureOpenAIApiVersion: AZURE_OPENAI_API_VERSION,
-            azureOpenAIApiInstanceName: AZURE_OPENAI_API_INSTANCE_NAME,
-            azureOpenAIApiDeploymentName: AZURE_OPENAI_DEPLOYMENT_NAME,
-        })
+        // const llm = new AzureChatOpenAI({
+        //     model: "gpt-4o",
+        //     azureOpenAIEndpoint: AZURE_OPENAI_ENDPOINT,
+        //     azureOpenAIApiKey: AZURE_OPENAI_API_KEY,
+        //     azureOpenAIApiVersion: AZURE_OPENAI_API_VERSION,
+        //     azureOpenAIApiInstanceName: AZURE_OPENAI_API_INSTANCE_NAME,
+        //     azureOpenAIApiDeploymentName: AZURE_OPENAI_DEPLOYMENT_NAME,
+        // })
 
-        const graph = await getOrCreateNeo4jGraph()
+        // const graph = await getOrCreateNeo4jGraph()
 
-        await graph.refreshSchema();
+        // await graph.refreshSchema();
 
-        const graphCypherQAChain = GraphCypherQAChain.fromLLM({ cypherLLM: llm, qaLLM: llm, graph: graph, verbose: true, returnIntermediateSteps: true });
+        // const graphCypherQAChain = GraphCypherQAChain.fromLLM({ cypherLLM: llm, qaLLM: llm, graph: graph, verbose: true, returnIntermediateSteps: true });
 
-        const queryGraph = tool(async (input) => {
-            console.log("in query_graph_database tool")
-            console.log(`input has value ${input.query}`)
-            let res = await graphCypherQAChain.invoke({ query: input.query });
-            try {
-                return { userQuery: input.query, cypherQL: res.intermediateSteps[0].query, context: JSON.stringify(res.intermediateSteps[1].context) }
-            } catch {
-                return { userQuery: input.query, cypherQL: res.intermediateSteps[0].query, context: JSON.stringify([]) }
-            }
-        }, {
-            name: 'query_graph_database',
-            description: 'this tool queries the graph database and should be used when asked questions about relationships between item.  You might also use this to grab necessary ids such as model ids, project ids, deployment ids, etc',
-            schema: z.object({
-                query: z.string().describe("The user query that should be passed to the graph chain"),
-            })
-        })
+        // const queryGraph = tool(async (input) => {
+        //     console.log("in query_graph_database tool")
+        //     console.log(`input has value ${input.query}`)
+        //     let res = await graphCypherQAChain.invoke({ query: input.query });
+        //     try {
+        //         return { userQuery: input.query, cypherQL: res.intermediateSteps[0].query, context: JSON.stringify(res.intermediateSteps[1].context) }
+        //     } catch {
+        //         return { userQuery: input.query, cypherQL: res.intermediateSteps[0].query, context: JSON.stringify([]) }
+        //     }
+        // }, {
+        //     name: 'query_graph_database',
+        //     description: 'this tool queries the graph database and should be used when asked questions about relationships between item.  You might also use this to grab necessary ids such as model ids, project ids, deployment ids, etc',
+        //     schema: z.object({
+        //         query: z.string().describe("The user query that should be passed to the graph chain"),
+        //     })
+        // })
 
         const interpretResults = tool(async (input) => {
             console.log("in interpret_result tool")
@@ -93,7 +93,8 @@ export async function getOrCreateGraphChatAgent() {
                 })
             })
 
-        const tools = [queryGraph, interpretResults, ...mcpTools]
+        // const tools = [queryGraph, interpretResults, ...mcpTools]
+        const tools = [interpretResults, ...mcpTools]
 
         const llmWithTools = new AzureChatOpenAI({
             model: "gpt-4o",

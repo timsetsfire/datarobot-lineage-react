@@ -5,7 +5,7 @@ from starlette.routing import Route
 from mcp.server.fastmcp import FastMCP
 
 from openai import AsyncOpenAI
-from prompts import SYSTEM_PROMPT_PLOTLY_CHART, PLOTLY_PROMPT_TEMPLATE
+from prompts import SYSTEM_PROMPT_PLOTLY_CHART, PLOTLY_PROMPT_TEMPLATE, TEXT2CYPHER_PROMPT_TEMPLATE
 from utils import parse_code
 import pandas as pd
 import os
@@ -23,6 +23,7 @@ from dotenv import load_dotenv
 import markdown
 from openai import OpenAI
 from typing import Union, Any
+from utils import *
 
 load_dotenv(dotenv_path="../.env", override = True)
 
@@ -30,6 +31,82 @@ token = os.environ.get("DATAROBOT_API_TOKEN")
 endpoint = os.environ.get("DATAROBOT_ENDPOINT")
 
 mcp = FastMCP("MLOPS MCP 🚀")
+
+@mcp.tool()
+def execute_cypher(cypher_query: str) -> dict:
+    """runs cypher query and returns result.
+    
+    Args:
+        cypher_query (str): the cypher query to run against supported graph db (kuzu or neo4j)
+
+    Returns: 
+        dict:
+            - result: dict
+    """
+    graphdb = os.environ.get("GRAPHDB")
+    if graphdb == "neo4j":
+        from langchain_neo4j import Neo4jGraph
+        NEO4J_URI = os.environ.get("NEO4J_URL")
+        NEO4J_USERNAME = "neo4j"
+        NEO4J_PASSWORD = os.environ.get("NEO4J_PASSWORD")
+        graph = Neo4jGraph(url=NEO4J_URI, username=NEO4J_USERNAME, password=NEO4J_PASSWORD)
+    elif graphdb == "kuzu":
+        import kuzu
+        from langchain_kuzu.graphs.kuzu_graph import KuzuGraph
+        kuzu_path = os.environ.get("KUZU_PATH")
+        gdb = kuzu.Database(kuzu_path)
+        conn = kuzu.Connection(gdb)
+        graph = KuzuGraph(db = gdb, allow_dangerous_requests=True)
+    try:
+        return dict(type = "data", result = graph.query(cypher_query))
+    except Exception as e:
+        return dict(result = f"there was an error {e}.  you probably should validate that the query is ")
+    
+@mcp.tool()
+def text2cypher(query_text) -> dict:
+    """Converts query_text to a Cypher query using an LLM.  You will need to use this tool when you are asked anything that might be specific to a system or database.  For example, what types of assets are available?  What is the relationship between different assets, etcs
+
+    Args:
+        query_text (str): The natural language query used to search the Neo4j database.
+        prompt_params (Dict[str, Any]): additional values to inject into the custom prompt, if it is provided. If the schema or examples parameter is specified, it will overwrite the corresponding value passed during initialization. Example: {'schema': 'this is the graph schema'}
+
+
+    Returns:
+        dict: 
+            - type: code
+            - codeType: the type of data returned, which will be "cypher".
+            - code: string containing the generate cypher
+    """
+    graphdb = os.environ.get("GRAPHDB")
+    if graphdb == "neo4j":
+        from langchain_neo4j import Neo4jGraph
+        NEO4J_URI = os.environ.get("NEO4J_URL")
+        NEO4J_USERNAME = "neo4j"
+        NEO4J_PASSWORD = os.environ.get("NEO4J_PASSWORD")
+        graph = Neo4jGraph(url=NEO4J_URI, username=NEO4J_USERNAME, password=NEO4J_PASSWORD)
+    elif graphdb == "kuzu":
+        import kuzu
+        from langchain_kuzu.graphs.kuzu_graph import KuzuGraph
+        kuzu_path = os.environ.get("KUZU_PATH")
+        gdb = kuzu.Database(kuzu_path)
+        conn = kuzu.Connection(gdb)
+        graph = KuzuGraph(db = gdb, allow_dangerous_requests=True)
+    graph.refresh_schema()
+
+    text2cypher_prompt = TEXT2CYPHER_PROMPT_TEMPLATE.render(schema = graph.schema, examples = None, query_text = query_text)
+    client = OpenAI(
+        base_url="https://app.datarobot.com/api/v2/deployments/682cb3448a869c36cea3a77f",
+        api_key=os.environ["DATAROBOT_API_TOKEN"],
+    )
+    response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "user", "content": text2cypher_prompt}
+            ]
+        )
+    cypher_code = response.choices[0].message.content
+    cypher_code = extract_cypher(cypher_code)
+    return dict(type = "cypher", result = cypher_code)
 
 @mcp.tool()
 def generate_plotly(prompt: str, path: str) -> dict:
@@ -54,7 +131,10 @@ def generate_plotly(prompt: str, path: str) -> dict:
         )
 
         df = pd.read_csv(path) 
-        plotly_prompt = PLOTLY_PROMPT_TEMPLATE.render(question = prompt, dataframe =df.to_csv(index = False), metadata = df.dtypes.to_dict())
+        buffer = StringIO()
+        df.info(buf=buffer)
+        info_str = buffer.getvalue()
+        plotly_prompt = PLOTLY_PROMPT_TEMPLATE.render(question = prompt, dataframe =df.head().to_csv(index = False), metadata = info_str)
         plotly_code = client.chat.completions.create(
             model="gpt-4o",
             messages=[
@@ -63,30 +143,25 @@ def generate_plotly(prompt: str, path: str) -> dict:
             ]
         )
         response = plotly_code.choices[0].message.content
-        response = parse_code(response, code = "json")
-        parsed_python_code = json.loads(response)
+        parsed_python_code = parse_code(response, code = "python")
         local_namespace = {}
-        exec(parsed_python_code["code"], {}, local_namespace)
+        exec(parsed_python_code, {}, local_namespace)
         func = local_namespace.get("create_charts")
-        so = StringIO()
-        ## plotly figure 
-        # func(df)["fig1"].to_json()
-        plotly_json =  func(df)["fig1"].to_json()
-        plotly_json =  func(df)["fig1"].to_plotly_json()
+        plotly_json =  func(df).to_plotly_json()
         with open("../.cache/plotly_chart.json", "w") as f:
             json.dump(plotly_json, f)
         return {
-            "plotType": "plotly", 
-            "plotPath": "./.cache/plotly_chart.json",
+            "type": "plotly",
+            "code": parsed_python_code,
+            "path": "./.cache/plotly_chart.json",
             }
     except Exception as e:
         print(f"Error generating plotly chart: {e}")
         return {"error": f"""there was an error generating the plolty chart.  Please try again but maybe add the error so the llm can try better.  Here is the error: {e}"""}
 
-
 @mcp.tool()
 def deployment_health_check(deployment_id: str) -> dict:
-    """use this to check the health of a deployment.  will return a dictionary containing info on model health (drift and accuray) as well as service health.
+    """use this to check the health of a deployment.  will return a dictionary containing info on model health (drift and accuray) as well as service health.  only use this if you have an available deployment id
 
     Args:
         deployment_id: the id of the datarobot deployment to check
@@ -129,12 +204,18 @@ def retrieve_model_feature_impact(model_id: str, project_id: str) -> str:
     Args:
         model_id: the id of the datarobot model to retrieve feature impact for
         project_id: the id of the datarobot project that contains the model
+
+    Return: 
+        dict:
+            type: dataset 
+            path: path to dataset
     """
     client = dr.Client(token = token, endpoint = endpoint)
     model = dr.Model.get(project_id, model_id)
     feature_impact = model.get_or_request_feature_impact() 
     feature_impact_df = pd.DataFrame(feature_impact).sort_values("impactNormalized", ascending=False)[["featureName", "impactNormalized"]]
-    return feature_impact_df.to_csv(index = False)
+    feature_impact_df.to_csv("../.cache/feature_impact.csv", index = False)
+    return dict( type = "data", path = "./.cache/feature_impact.csv")
 
 @mcp.tool()
 def retrieve_model_feature_effect(model_id: str, project_id: str) -> list:
@@ -151,7 +232,6 @@ def retrieve_model_feature_effect(model_id: str, project_id: str) -> list:
     else:
         feature_effect = model.get_or_request_feature_effect(source = "validation")
     return feature_effect.feature_effects
-
 
 def render_with_style(markdown_text):
     html_body = markdown.markdown(markdown_text)

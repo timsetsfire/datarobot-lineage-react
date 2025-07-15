@@ -8,3 +8,7 @@ markdown
 plotly
 jinja2
 openai
+langchain-kuzu 
+kuzu==0.9.0
+langchain-neo4j
+neo4j

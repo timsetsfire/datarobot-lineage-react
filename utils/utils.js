@@ -10,18 +10,18 @@ const __dirname = path.dirname(__filename);
 export const getTypedEdge = (parentLabel, childLabel, context = {}) => {
     const edgeTypeMap = {
         // Application relationships (most important for lineage clarity)
-        'applications-deployments': 'USES_DEPLOYMENT',
-        'applications-models': 'USES_MODEL', 
-        'applications-projects': 'BUILT_FROM_PROJECT',
-        'applications-datasets': 'REFERENCES_DATASET',
-        'applications-vectorDatabases': 'USES_VECTOR_DB',
-        'applications-registeredModels': 'USES_REGISTERED_MODEL',
+        'deployments-applications': 'USES_DEPLOYMENT',
+        'models-applications': 'USES_MODEL', 
+        'projects-applications': 'BUILT_FROM_PROJECT',
+        'datasets-applications': 'REFERENCES_DATASET',
+        'vectorDatabases-applications': 'USES_VECTOR_DB',
+        'registeredModels-applications': 'USES_REGISTERED_MODEL',
         
         // Custom Application relationships
-        'customApplications-deployments': 'USES_DEPLOYMENT',
-        'customApplications-models': 'USES_MODEL',
-        'customApplications-projects': 'BUILT_FROM_PROJECT',
-        'customApplications-customApplicationSources': 'BUILT_FROM_SOURCE',
+        'deployments-customApplications': 'USES_DEPLOYMENT',
+        'models-customApplications': 'USES_MODEL',
+        'projects-customApplications': 'BUILT_FROM_PROJECT',
+        'customApplicationSources-customApplications': 'BUILT_FROM_SOURCE',
         
         // Core ML Pipeline relationships
         'datasets-projects': 'TRAINED_ON',
@@ -1909,6 +1909,14 @@ export async function buildGraph(token, endpoint, useCaseId) {
                     dashes: getEdgeDashes(edgeInfo.type)
                 });
             });
+        })
+        nodes.forEach((node) => { 
+            delete node.edgeType
+            delete node.configFields
+            delete node.applicationTypes 
+            delete node.deploymentIds
+            delete node.relatedEntities 
+            delete node.referencedDatasets
         })
         // nodes.map( node => node.parents.map( parentNode) => parentNode.nodes)
         const graph = { nodes: nodes, edges: edges }

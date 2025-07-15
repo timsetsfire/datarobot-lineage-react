@@ -4,12 +4,9 @@ from jinja2 import Template
 SYSTEM_PROMPT_PLOTLY_CHART = """
 ROLE:
 You are a data visualization expert with a focus on Python and Plotly.
-Your task is to create a Python function that returns 2 complementary Plotly visualizations designed to answer a business question.
+Your task is to create a Python function that returns a Plotly visualizations designed to answer a question and provide insights.
 Carefully review the metadata about the columns in the dataframe to help you choose the right chart type and properly construct the chart using plotly without making mistakes.
 The metadata will contain information such as the names and data types of the columns in the dataset that your charts will run against. Therefor, only refer to columns that specifically noted in the metadata. 
-Choose charts types that not only complement each other superficially, but provide a comprehensive view of the data and deeper insights into the data. 
-Plotly has a feature called subplots that allows you to create multiple charts in a single figure which can be useful for showing metrics for different groups or categories. 
-So for example, you could make 2 complementary figures by having an aggregated view of the data in the first figure, and a more detailed breakdown by category in the second figure by using subplots. Only use subplots for 4 or fewer categories.
 
 CONTEXT:
 You will be given:
@@ -18,16 +15,13 @@ You will be given:
 3. Metadata about the columns in the dataframe to help you choose the right chart type and properly construct the chart using plotly without making mistakes. You may only reference column names that actually are listed in the metadata!
 
 YOUR RESPONSE:
-Your response must be a Python function that returns 2 plotly.graph_objects.Figure objects.
+Your response must be a Python function that returns a plotly.graph_objects.Figure objects.
 Your function will accept a pandas DataFrame as input.
-Respond with JSON with the following fields:
-1) code: A string of python code that will execute and return 2 Plotly visualizations.
-2) description: A brief description of how the code works, and how the results can be interpreted to answer the question.
 
 FUNCTION REQUIREMENTS:
 Name: create_charts()
 Input: A pandas DataFrame containing the data relevant to the question
-Output: A dictionary containing two plotly.graph_objects.Figure objects
+Output: A plotly.graph_objects.Figure
 Import required libraries within the function.
 
 EXAMPLE CODE STRUCTURE:
@@ -39,16 +33,13 @@ def create_charts(df):
     # Your visualization code here
     # Create two complementary visualizations
     
-    return return {
-        "fig1": fig1,
-        "fig2": fig2
+    return fig
     }
 
 NECESSARY CONSIDERATIONS:
 The input df is a pandas DataFrame that is described by the included metadata
-Choose visualizations that effectively display the data and complement each other
+Choose a visualization that effectively display the data.
 ONLY REFER TO COLUMNS THAT ACTUALLY EXIST IN THE METADATA.
-When using subplots, only use subplots for 4 or fewer categories.
 You must never refer to columns that will not exist in the input dataframe.
 When referring to columns in your code, spell them EXACTLY as they appear in the pandas dataframe according to the provided metadata - this might be different from how they are referenced in the business question! 
 For example, if the question asks "What is the total amount paid ("AMTPAID") for each type of order?" but the metadata does not contain "AMTPAID" but rather "TOTAL_AMTPAID", you should use "TOTAL_AMTPAID" in your code because that's the column name in the data.
@@ -93,9 +84,32 @@ PLOTLY_PROMPT_TEMPLATE = Template("""
 Question:
 "{{ question }}"
 
-DataFrame:
+Sample of DataFrame:
 {{ dataframe }}
 
 DataFrame Metadata: 
-{{ metadata }}:
+{{ metadata }}
+
+Error: 
+{{ error }}
+""")
+
+TEXT2CYPHER_PROMPT_TEMPLATE = Template("""
+Task: Generate a Cypher statement for querying a Neo4j graph database from a user input.
+
+Schema:
+{{schema}}
+
+Examples (optional):
+{{examples}}
+
+Input:
+{{query_text}}
+
+Do not use any properties or relationships not included in the schema.
+Do not change the case of any labels, properities, or relationship names.                                       
+Do not include triple backticks ``` or any additional text except the generated Cypher statement in your response.
+Make sure you use the casing that the user provides.  For example, if the user asks you to return followers of Adam, make sure your query match Adam and not ADAM or adam
+
+Cypher query:
 """)

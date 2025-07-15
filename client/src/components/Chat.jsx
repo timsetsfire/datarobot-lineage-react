@@ -67,11 +67,16 @@ const Chat = () => {
                     if (parsed && parsed.type) {
                         switch (parsed.type) {
                         case 'plotly':
-                            return <RenderPlotlyFigure jsonUrl={parsed.data.url} />;
+                            console.log("plotty type")
+                            return <RenderPlotlyFigure jsonUrl={parsed.path} />;
                         case 'text':
+                            console.log("text type")
+                            console.log(parsed)
                             return <ReactMarkdown>{parsed.data.content}</ReactMarkdown>;
                         // add other types if needed
                         default:
+                            console.log("default type")
+                            console.log(parsed)
                             return <ReactMarkdown>{message.text}</ReactMarkdown>;
                         }
                     }
