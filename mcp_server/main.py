@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv(dotenv_path="../.env", override = True)
+
 from starlette.applications import Starlette
 from starlette.routing import Mount, Host
 from starlette.responses import JSONResponse, Response, PlainTextResponse, HTMLResponse
@@ -19,18 +22,73 @@ import logging
 import pandas as pd
 import datarobot as dr 
 from rapidfuzz import process
-from dotenv import load_dotenv
 import markdown
 from openai import OpenAI
 from typing import Union, Any
+from pathlib import Path
 from utils import *
+import datarobot as dr 
+from sharebot import *
+from bson.objectid import ObjectId
 
-load_dotenv(dotenv_path="../.env", override = True)
+FILE_PATH = Path(__file__)
+print(FILE_PATH.absolute())
+CACHE_DIR = FILE_PATH.parent.parent / ".cache"
+print(CACHE_DIR)
+
+
 
 token = os.environ.get("DATAROBOT_API_TOKEN")
 endpoint = os.environ.get("DATAROBOT_ENDPOINT")
 
 mcp = FastMCP("MLOPS MCP 🚀")
+
+
+
+@mcp.tool()
+def share(asset_type: str, asset_id: str, username: str, use_case_id: str = None) -> dict:
+    """share an asset with a datarobot user.  this will always share with a default role of READ_ONLY or USER.
+    
+    Args:
+        asset_type (str): the asset type you are sharing. Possible values 'customApplications', 'customModels', 'datasets', 'deployments', 'registeredModels'
+        asset_id (str): this id of the asset that you need to share.  
+        username (str): this is the username that the assest should be shared with
+        use_case_id (str): this is the id of the use case. This is not required for asset types 'customApplications', 'customModels', 'datasets', 'deployments', 'registeredModels'
+
+    Returns: 
+        dict:
+            status_code: the status code of the response.  204 means successful.  Anything means something went wrong.
+            status_message: message related to the status code.
+    """ 
+
+    ## validate id as bson 
+    try:
+        if use_case_id:
+            object_id = ObjectId(use_case_id)
+        else: 
+            object_id = ObjectId(asset_id)
+    except Exception as e:
+        return {"status_code": 404, "status_message": f"{asset_id} is not a valid id for {asset_type}.  query the use case id and try again."}
+    if asset_type in ['customApplications', 'customModels', 'datasets', 'deployments', 'registeredModels']:
+        client = dr.Client(token = token, endpoint = endpoint)
+        if asset_type == "customApplications":
+            asset = CustomApplication(asset_id, asset_type, "dummy_create_date")
+        elif asset_type == "customModels":
+            asset = CustomModel(asset_id, asset_type, "dummy_create_date")
+        elif asset_type == "deployments":
+            asset = Deployment(asset_id, asset_type, "dummy_create_date") 
+        elif asset_type == "registeredModels":
+            asset = RegisteredModel(asset_id, asset_type, "dummy_create_date")  
+        elif asset_type == "datasets":
+            asset = Dataset(asset_id, asset_type, "dummy_create_date")  
+    elif asset_type in ["recipes", "projects", "models", "datasets", "applications"]:
+        if use_case_id:
+            asset = UseCase(use_case_id, "useCase", "dummy_create_date") 
+        else:
+            return {"status_code": "error", "status_message": f"the use_case_id must be provided along with the id for {asset_type}.  query the use case id and try to share again."}
+    resp = asset.share(username)
+    return resp
+
 
 @mcp.tool()
 def execute_cypher(cypher_query: str) -> dict:
@@ -130,7 +188,7 @@ def generate_plotly(prompt: str, path: str) -> dict:
             api_key=os.environ["DATAROBOT_API_TOKEN"],
         )
 
-        df = pd.read_csv("." + path) 
+        df = pd.read_csv(path) 
         buffer = StringIO()
         df.info(buf=buffer)
         info_str = buffer.getvalue()
@@ -148,12 +206,13 @@ def generate_plotly(prompt: str, path: str) -> dict:
         exec(parsed_python_code, {}, local_namespace)
         func = local_namespace.get("create_charts")
         plotly_json =  func(df).to_plotly_json()
-        with open("../.cache/plotly_chart.json", "w") as f:
+        output_path = CACHE_DIR / "plotly_chart.json"
+        with open(output_path, "w") as f:
             json.dump(plotly_json, f, cls=PlotlyJSONEncoder)
         return {
             "type": "plotly",
             "code": parsed_python_code,
-            "path": "./.cache/plotly_chart.json",
+            "path": output_path,
             }
     except Exception as e:
         print(f"Error generating plotly chart: {e}")
@@ -213,9 +272,10 @@ def retrieve_model_feature_impact(model_id: str, project_id: str) -> dict:
     client = dr.Client(token = token, endpoint = endpoint)
     model = dr.Model.get(project_id, model_id)
     feature_impact = model.get_or_request_feature_impact() 
+    output_path = str(CACHE_DIR / "feature_impact.csv")
     feature_impact_df = pd.DataFrame(feature_impact).sort_values("impactNormalized", ascending=False)[["featureName", "impactNormalized"]]
-    feature_impact_df.to_csv("../.cache/feature_impact.csv", index = False)
-    return dict( type = "data", path = "./.cache/feature_impact.csv")
+    feature_impact_df.to_csv(output_path, index = False)
+    return dict( type = "data", path = output_path)
 
 @mcp.tool()
 def retrieve_model_feature_effect(model_id: str, project_id: str) -> list:

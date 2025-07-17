@@ -12,3 +12,4 @@ langchain-kuzu
 kuzu==0.9.0
 langchain-neo4j
 neo4j
+bson == 0.5.10

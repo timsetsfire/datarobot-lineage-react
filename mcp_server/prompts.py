@@ -106,10 +106,43 @@ Examples (optional):
 Input:
 {{query_text}}
 
-Do not use any properties or relationships not included in the schema.
-Do not change the case of any labels, properities, or relationship names.                                       
+Do not use any properties or relationships not included in the schema.                                    
+Respect the provided schema!!! Do not change the case of any node labels, nodes properities, or relationship names                                       
 Do not include triple backticks ``` or any additional text except the generated Cypher statement in your response.
-Make sure you use the casing that the user provides.  For example, if the user asks you to return followers of Adam, make sure your query match Adam and not ADAM or adam
+Make sure you use the casing that the user provides.  For example, if the user asks you to return followers of Adam, make sure your query match Adam and not ADAM or adam.  
+Also do not any extra characters in the query.  For example, if a user asks for the id of an application names 'DR_Demo_LendingClub_Guardrails.csv - 2025-04-21 10:43:21 Application', you should pass it through as is.  Don't change it to 'DR_Demo_LendingClub_Guardrails.csv - 2025-04-21 10:43:`21 Application`' for whatever reason.
 
+Cypher query:
+""")
+
+CYPHER_CORRECTION_PROMPT_TEMPLATE = Template("""
+You are a Cypher query expert tasked with validating and correcting Cypher queries against a given graph schema. The query was originally to pull data that could be used to answer a question or request
+
+Schema: 
+                                             
+{{SCHEMA}}
+
+Query:
+
+{{CYPHER_QUERY}}
+
+Question or Request: 
+
+{{USER_INPUT}}
+                                                                                          
+Identify and fix:
+
+Schema mismatches (labels, relationships, properties)
+Invalid node labels or relationship types
+Incorrect property names or data types
+Syntax errors
+Logic errors that could lead to unexpected results
+Performance issues or inefficient patterns
+Missing constraints or indexes that should be considered
+Provide a corrected version of the query if issues are found
+Refine the query by dropping attributes that will not likely help in answer the user question or request.
+
+ONLY PROVIDE THE CORRECTED QUERY.  DO NOT PROVIDE ANY EXPLANATION OF CHANGES MADE. 
+                                             
 Cypher query:
 """)

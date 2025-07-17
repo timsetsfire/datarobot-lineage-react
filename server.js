@@ -379,11 +379,12 @@ app.get("/plotly", async (req, res) => {
   console.log(`plotly path = ${path.join(__dirname, plotlyPath)}`)
   
   try {
-    const data = fs.readFileSync( path.join(__dirname, plotlyPath), "utf-8")
+    const data = fs.readFileSync( plotlyPath , "utf-8")
     const jsonData = JSON.parse(data)
     console.log(jsonData)
     res.status(200).json(jsonData)
   } catch(error) {
+    console.log(error)
     res.status(400).json({error: error})
   }
 })

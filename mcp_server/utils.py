@@ -73,3 +73,16 @@ def parse_code(llm_response: str, code = "python"):
     #         return obj
 
     # raise RuntimeError("No callable function found in the generated code.")
+
+
+routes = dict(applications = "applications/{}/sharedRoles/",
+customApplications = "customApplications/{}/sharedRoles/",
+customModels = "customModels/{}/sharedRoles/versions/{}/sharedRoles/",
+externalDataStores = "externalDataStores/{}/sharedRoles/",
+externalDataSources = "externalDataSources/{}/sharedRoles/",
+datasets = "datasets/{}/sharedRoles/",
+deployments = "deployments/{}/sharedRoles/",
+projects = "projects/{}/sharedRoles/",
+recipes = "recipes/{}/sharedRoles/",
+registeredModels = "registeredModels/{}/sharedRoles/",
+useCases = "useCases/{}/sharedRoles/")

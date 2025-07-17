@@ -9,6 +9,8 @@ const __dirname = path.dirname(__filename);
 // Enhanced edge type mapping system
 export const getTypedEdge = (parentLabel, childLabel, context = {}) => {
     const edgeTypeMap = {
+
+
         // Application relationships (most important for lineage clarity)
         'deployments-applications': 'USES_DEPLOYMENT',
         'models-applications': 'USES_MODEL', 
@@ -16,6 +18,11 @@ export const getTypedEdge = (parentLabel, childLabel, context = {}) => {
         'datasets-applications': 'REFERENCES_DATASET',
         'vectorDatabases-applications': 'USES_VECTOR_DB',
         'registeredModels-applications': 'USES_REGISTERED_MODEL',
+
+        // Batching Monitoring Jobs relationships
+        'datasets-batchMonitoringJobs': 'READS_DATASET',
+        'datastores-batchMonitoringJobs': 'READS_DATASTORE',
+        'deployments-batchMonitoringJobs': 'MONITORS_DEPLOYMENT',
         
         // Custom Application relationships
         'deployments-customApplications': 'USES_DEPLOYMENT',
@@ -142,12 +149,16 @@ const getDeploymentUrl = (deploymentId) => `deployments/${deploymentId}`
 const getLLMBlueprintsUrl = (playgroundId) => `genai/llmBlueprints/?playgroundId=${playgroundId}`
 const getLLMBlueprintUrl = (llmBlueprintId) => `genai/llmBlueprints/${llmBlueprintId}/`
 const getModelsFromProjectUrl = (projectId) => `projects/${projectId}/models`
+const getBatchMonitoringJobsFromDeploymentUrl = (deploymentId) => `batchMonitoringJobDefinitions/?deploymentId=${deploymentId}`
 const getModelFromProjectId = (modelId, projectId) => `projects/${projectId}/models/${modelId}`
 const getPlaygroundUrl = (playgroundId) => `genai/playgrounds/${playgroundId}/`
 const getProjectUrl = (projectId) => `projects/${projectId}`
 const getVectorDatabaseUrl = (vectorDatabaseId) => `genai/vectorDatabases/${vectorDatabaseId}/`
 const getRecipeUrl = (recipeId) => `recipes/${recipeId}`
 const getRegisteredModelUrl = (registeredModelId, versionId) => `registeredModels/${registeredModelId}/versions/${versionId}`
+const getBatchMonitoringJobUrl = (batchMonitoringJobId) => `batchMonitoringJobDefinitions/${batchMonitoringJobId}`
+const getDeploymentBatchMonitoringJobUrl = (deploymentId) => `batchMonitoringJobDefinitions/?deploymentId=${deploymentId}`
+
 
 const STORAGE = "./storage";
 
@@ -231,7 +242,7 @@ export function getUseCaseAssetsUrls(useCaseAssets) {
     
     const accessibleDeployments = filterAccessibleAssets(useCaseAssets.deployments, 'deployments');
     const deployments = accessibleDeployments.map(item => getDeploymentUrl(item.id));
-    
+   
     const accessibleNotebooks = filterAccessibleAssets(useCaseAssets.notebooks, 'notebooks');
     const notebooks = accessibleNotebooks.map(item => `notebooks/${item.id}`);
     
@@ -259,6 +270,9 @@ export function getUseCaseAssetsUrls(useCaseAssets) {
     
     // Models are derived from projects, so if projects are filtered, models should be too
     const models = accessibleProjects.map(item => getModelsFromProjectUrl(item.projectId)).flat();
+
+    // batchMonitoring jobs are attached to deployments, so if deployments are filtered, batch monitoring jobs should be as well
+    const batchMonitoringJobs = accessibleDeployments.map( item => getBatchMonitoringJobsFromDeploymentUrl(item.id))
     
     const llmBlueprints = accessiblePlaygrounds.map(item => getLLMBlueprintsUrl(item.entityId)).flat();
     
@@ -267,6 +281,7 @@ export function getUseCaseAssetsUrls(useCaseAssets) {
     const urls = {
         applications: applications,
         customApplications: customApplications,
+        batchMonitoringJobs: batchMonitoringJobs,
         recipes: recipes,
         datasets: datasets,
         deployments: deployments,
@@ -631,6 +646,31 @@ export async function getApplicationNode(client, useCaseData, nodes, application
         relatedEntities: relatedEntities,
         referencedDatasets: referencedDatasets
     }   
+}
+
+export async function getBatchMonitoringJobNode(client, useCaseData, nodes, batchMonitoringJobId) { 
+    const baseUrl = client.getUri().replace("/api/v2", "")
+    const bmj = useCaseData.batchMonitoringJobs.filter(item => item.id ===  batchMonitoringJobId)[0]
+    const batchMonitoringJob = bmj ? bmj : await fetchDataWithRetry(client, getBatchMonitoringJobUrl(batchMonitoringJobId))
+    const deploymentId = batchMonitoringJob.batchMonitoringJob.deploymentId
+    const intakeSettings = batchMonitoringJob.batchMonitoringJob.intakeSettings
+    const deploymentNode = await getDeploymentNode(client, useCaseData, nodes, deploymentId)
+    var dataNode = null
+    if(intakeSettings.datasetId) { 
+        dataNode = await getDatasetNode(client, useCaseData, nodes, intakeSettings.datasetId)
+    } else if (intakeSettings.dataStoreId) { 
+        dataNode = await getDataStoreNode(client, useCaseData, nodes, intakeSettings.dataStoreId ) 
+    }
+   return { 
+    id: batchMonitoringJobId, 
+    label: "batchMonitoringJobs",
+    name: batchMonitoringJob.name, 
+    url: `${baseUrl}/console-nextgen/deployments/${deploymentId}/monitoring/job-definitions/${batchMonitoringJobId}`, 
+    apiPayload: batchMonitoringJob, 
+    parents: [ deploymentNode, dataNode ],
+    useCaseId: useCaseData.useCaseId, 
+    useCaseName: useCaseData.useCaseName
+   }
 }
 
 export async function getCustomApplicationNode(client, useCaseData, nodes, customApplicationId) { 
@@ -1415,7 +1455,7 @@ export async function resolveNestedParents(input) {
 }
 
 export async function getUseCaseNodes(client, useCaseData) {
-    const nodes = {datasets: {}, dataSources: {}, recipes: {}, projects: {}, models: {}, dataStores: {}, vectorDatabases: {}, registeredModels: {}, deployments: {}, playgrounds: {}, llmBlueprints: {}, llms: {}, customModelVersions: {}}
+    const nodes = {datasets: {}, dataSources: {}, recipes: {}, projects: {}, models: {}, dataStores: {}, vectorDatabases: {}, registeredModels: {}, deployments: {}, playgrounds: {}, llmBlueprints: {}, llms: {}, customModelVersions: {}, batchMonitoringJobs: {}}
 
     // Helper function to filter assets by access with detailed logging
     const filterAccessibleAssets = (assets, assetType) => {
@@ -1619,6 +1659,24 @@ export async function getUseCaseNodes(client, useCaseData) {
     } catch (error) {
         console.warn(`⚠️  Failed to process deployments:`, error.message);
         nodes["deployments"] = {};
+    }
+
+    // Filter and process batchMonitoringJobs
+    const accessibleBatchMonitoringJobs = filterAccessibleAssets(useCaseData.batchMonitoringJobs || [], 'batchMonitoringJobs');
+    try {
+        const batchMonitoringJobsNodes = await Promise.all(accessibleBatchMonitoringJobs.map( async batchMonitoringJob => {
+            try {
+                return await getBatchMonitoringJobNode(client, useCaseData, nodes, batchMonitoringJob.id);
+            } catch (error) {
+                console.warn(`⚠️  Failed to create batch monitoring job node ${batchMonitoringJob.id}:`, error.message);
+                return { id: batchMonitoringJob.id, label: "batchMonitoringJobs", name: "Error batchMonitoringJob", error: error.message, parents: [] };
+            }
+        }))
+    nodes["batchMonitoringJob"] = Object.fromEntries( batchMonitoringJobsNodes.map( node => [node.id, node])) 
+    console.log("batchMonitoringJob nodes are done")
+    } catch (error) {
+        console.warn(`⚠️  Failed to process batchMonitoringJobs:`, error.message);
+        nodes["batchMonitoringJobs"] = {};
     }
     
     // Filter and process vector databases
@@ -1858,9 +1916,15 @@ export async function buildGraph(token, endpoint, useCaseId) {
         const useCaseAssetsUrls =  getUseCaseAssetsUrls(useCaseAssets)
         
         const useCaseData = await getUseCaseData(client, useCaseAssetsUrls)
+
         if (useCaseData.hasOwnProperty("models")) {
             useCaseData.models = useCaseData.models.flat() 
         }
+
+        if (useCaseData.hasOwnProperty("batchMonitoringJobs")) {
+            useCaseData.batchMonitoringJobs = useCaseData.batchMonitoringJobs.map( item => item.data).flat()
+        }
+
         useCaseData["useCaseId"] = useCaseId
         useCaseData["useCaseName"] = (await (client.get(`useCases/${useCaseId}`))).data.name
         
