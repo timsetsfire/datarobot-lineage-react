@@ -2,11 +2,15 @@
 
 The chat component of this application is using an agent to answer questions regarding the use case.  
 
-Two tools have been coded into the app itself 
-1. Cyper Q&A Chain -> this connects to neo4j, generated and executes cypher statements and returns the resulting dataset
-2. Interpret Result -> This interprest the dataset returned from Cypher Q&A Chain based on the original user inquiry
-
 Coding in Javascript is not as easy as python, so an MCP server has been added providing a bit more extensibility to the chat agent.  This is a very simple MCP Server, and you can write your tools in `./mcp_server/main.py`
+
+Currently available tools 
+* `text2cypher` - takes a user prompt and converts to cypher (neo4j graph required)
+* `execute_cypher` - executes generated cypher (neo4j graph required)
+* `generate_plotly` - will create a plotly figure based on provided datasets and user prompt
+* `share` - shares an asset with another datarobot user
+* `retrieve_model_feature_impact` - requests and gets feature impact for a model
+* `deployment_health_check` - checks the health of a deployment 
 
 Add your tools in `./mcp_server/main.py` and use the `@mcp.tool()` decorator.  For example 
 
